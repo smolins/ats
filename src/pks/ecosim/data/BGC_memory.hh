@@ -71,7 +71,8 @@ extern "C" {
                         int ncells_per_col_,
                         int num_components,
                         int num_columns,
-                        int num_pfts);
+                        int num_pfts,
+                        int num_snow_layers);
   void FreeBGCState(BGCState* state);
 
   /* Auxiliary Data

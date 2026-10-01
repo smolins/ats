@@ -58,6 +58,9 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
     * `"Number of PFTs [1-5] "`" ``[int]`` **1** Number of PFTs allowed in every column. 5
      is the maximum number allowed
 
+   * `"number of snow layers`" ``[int]`` **5** Number of EcoSIM snowpack layers. Must match
+     EcoSIM's compiled JS.
+
    * `"domain name`" ``[string]`` **domain**
 
    * `"surface domain name`" ``[string]`` **surface**
@@ -100,6 +103,24 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    `"SAI`"                               **surface-SAI**
    `"vegetation type`"                   **surface-vegetation_type**
 
+   //EcoSIM internal state, owned and checkpointed so that restart is exact
+   //(per snow layer: num_snow_layers components; canopy water: num_pfts components)
+   `"snow layer dry swe`"                **surface-snow_layer_dry_swe**  [m^3]
+   `"snow layer liquid`"                 **surface-snow_layer_liquid**  [m^3]
+   `"snow layer ice`"                    **surface-snow_layer_ice**  [m^3]
+   `"snow layer temperature`"            **surface-snow_layer_temperature**  [K]
+   `"snow layer temperature celsius`"    **surface-snow_layer_temperature_c**  [C]
+   `"snow layer density`"                **surface-snow_layer_density**  [Mg m^-3]
+   `"snow layer thickness`"              **surface-snow_layer_thickness**  [m]
+   `"snow layer volume`"                 **surface-snow_layer_volume**  [m^3]
+   `"snow layer heat capacity`"          **surface-snow_layer_heat_capacity**  [MJ K^-1]
+   `"snow layer vapor diffusivity`"      **surface-snow_layer_vapor_diffusivity**
+   `"canopy water pft`"                  **surface-canopy_water_pft**  [m^3]
+   `"litter water`"                      **surface-litter_water**  [m^3]
+   `"litter ice`"                        **surface-litter_ice**  [m^3]
+   `"litter temperature`"                **surface-litter_temperature**  [K]
+   `"litter heat capacity`"              **surface-litter_heat_capacity**  [MJ K^-1]
+
    //General Flow Transport Energy
    `"mole fraction`"                     **mole_fraction**
    `"porosity`"                          **porosity**
@@ -124,6 +145,7 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
 #include <map>
 #include <vector>
 #include <string>
+#include <tuple>
 
 #include "Epetra_MultiVector.h"
 #include "Teuchos_ParameterList.hpp"
@@ -222,6 +244,10 @@ class EcoSIM : public PK_Physical_Default {
                  const BGCState& state,
                  const BGCAuxiliaryData& aux_data,
                const Tag& water_tag = Tags::DEFAULT);
+
+   // EcoSIM internal state that persists between advances
+   void CopyInternalStateToEcoSIM_(BGCState& state);
+   void CopyInternalStateFromEcoSIM_(const BGCState& state);
 
    int InitializeSingleProcess(int proc);
 
@@ -344,6 +370,18 @@ class EcoSIM : public PK_Physical_Default {
   Key cap_pres_key_;
   Key T_surf_key_;
   Key canopy_snow_key_;
+
+  // EcoSIM internal state (snowpack layers, surface litter, canopy water)
+  // that persists between advances. ATS owns a copy of each piece in a
+  // surface field so that it is checkpointed and restored on restart.
+  struct InternalStateField {
+    Key key;
+    int num_components;
+    BGCMatrixDouble BGCState::*matrix; // num_components x num_columns, or
+    BGCVectorDouble BGCState::*vector; // num_columns
+  };
+  std::vector<InternalStateField> internal_state_;
+  int num_snow_layers_;
 
   Teuchos::RCP<BGCEngine> bgc_engine_;
 

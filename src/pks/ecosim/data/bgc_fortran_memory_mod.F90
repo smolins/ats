@@ -43,7 +43,7 @@ module bgc_fortran_memory_mod
 
   interface
     subroutine AllocateBGCState(sizes, state, ncells_per_col_, num_components, &
-        num_columns, num_pfts) bind(C, name='AllocateBGCState')
+        num_columns, num_pfts, num_snow_layers) bind(C, name='AllocateBGCState')
       use BGCContainers_module, only : BGCSizes, BGCState
       use, intrinsic :: iso_c_binding, only: c_int
       implicit none
@@ -53,6 +53,7 @@ module bgc_fortran_memory_mod
       integer(c_int),VALUE :: num_components
       integer(c_int),VALUE :: num_columns
       integer(c_int),VALUE :: num_pfts
+      integer(c_int),VALUE :: num_snow_layers
     end subroutine
   end interface
   interface

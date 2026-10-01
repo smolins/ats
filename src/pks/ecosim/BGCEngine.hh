@@ -54,7 +54,8 @@ class BGCEngine {
                  int ncells_per_col_,
                  int num_components,
                  int num_columns,
-                 int num_pfts);
+                 int num_pfts,
+                 int num_snow_layers);
   
 
   // Frees the data structures that hold the chemical state information.

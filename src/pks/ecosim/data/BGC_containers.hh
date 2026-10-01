@@ -101,6 +101,7 @@ extern const int kBGCMaxWordLength;
     int num_components;
     int num_columns;
     int num_pfts;
+    int num_snow_layers;
   } BGCSizes;
 
   typedef struct {
@@ -131,6 +132,26 @@ extern const int kBGCMaxWordLength;
     BGCVectorDouble evaporation_snow;
     BGCVectorDouble sublimation_snow;
     BGCTensorDouble mole_fraction;
+    /* EcoSIM internal state carried between advances, checkpointed by ATS.
+       Must match the order in EcoSIM's BGC_containers.F90.
+       Snow layer arrays are num_snow_layers x num_columns. */
+    BGCMatrixDouble snow_dry_swe;
+    BGCMatrixDouble snow_liquid;
+    BGCMatrixDouble snow_ice;
+    BGCMatrixDouble snow_temperature;
+    BGCMatrixDouble snow_temperature_c;
+    BGCMatrixDouble snow_density;
+    BGCMatrixDouble snow_thickness;
+    BGCMatrixDouble snow_volume;
+    BGCMatrixDouble snow_heat_capacity;
+    BGCMatrixDouble snow_vapor_diffusivity;
+    /* num_pfts x num_columns */
+    BGCMatrixDouble canopy_water_pft;
+    /* surface litter (EcoSIM soil layer 0), num_columns */
+    BGCVectorDouble litter_water;
+    BGCVectorDouble litter_ice;
+    BGCVectorDouble litter_temperature;
+    BGCVectorDouble litter_heat_capacity;
   } BGCState;
 
   typedef struct {

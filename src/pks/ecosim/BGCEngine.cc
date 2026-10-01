@@ -65,10 +65,12 @@ void BGCEngine::InitState(BGCProperties& properties,
                                 int ncells_per_col_,
                                 int num_components,
                                 int num_columns,
-                                int num_pfts)
+                                int num_pfts,
+                                int num_snow_layers)
 {
   AllocateBGCProperties(&sizes_, &properties, ncells_per_col_, num_columns,num_pfts);
-  AllocateBGCState(&sizes_, &state, ncells_per_col_, num_components, num_columns, num_pfts);
+  AllocateBGCState(&sizes_, &state, ncells_per_col_, num_components, num_columns, num_pfts,
+                   num_snow_layers);
 }
 
 void BGCEngine::FreeState(BGCProperties& properties,
