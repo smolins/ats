@@ -97,6 +97,23 @@ EcoSIM::EcoSIM(Teuchos::ParameterList& pk_tree,
     subsurface_water_source_ecosim_key_ =
       Keys::readKey(*plist_, domain_, "subsurface water source ecosim", "subsurface_ecosim_water_source");
 
+    // These sources are primary variables owned by this PK (see Setup). PKs
+    // that use them (e.g. overland flow) are set up before this one, so
+    // declare the evaluator type now, before any Setup runs.
+    for (const auto& key : { surface_energy_source_ecosim_key_, surface_water_source_ecosim_key_,
+                             subsurface_energy_source_ecosim_key_, subsurface_water_source_ecosim_key_ }) {
+      if (S_->HasEvaluatorList(key) &&
+          S_->GetEvaluatorList(key).get<std::string>("evaluator type", "primary variable") !=
+            "primary variable") {
+        Errors::Message msg;
+        msg << "EcoSIM: \"" << key << "\" is computed by the EcoSIM PK; remove its evaluator \""
+            << S_->GetEvaluatorList(key).get<std::string>("evaluator type")
+            << "\" from the state's evaluators list.";
+        Exceptions::amanzi_throw(msg);
+      }
+      S_->GetEvaluatorList(key).set<std::string>("evaluator type", "primary variable");
+    }
+
     //Other
     cell_volume_key_ = Keys::readKey(*plist_, domain_, "cell volume", "cell_volume");
     //ecosim_aux_data_key_ = Keys::readKey(*plist_, domain_, "ecosim aux data", "ecosim_aux_data");
@@ -284,25 +301,29 @@ void EcoSIM::Setup() {
     }
   }
 
-  S_->Require<CompositeVector, CompositeVectorSpace>(surface_energy_source_ecosim_key_ , tag_next_, surface_energy_source_ecosim_key_)
-          .SetMesh(mesh_surf_)
-          ->SetGhosted(false)
-          ->SetComponent("cell", AmanziMesh::CELL, 1);
+  // Sources EcoSIM returns to ATS. This PK owns them as primary evaluators and
+  // marks them changed after every write, so evaluators that use them (e.g.
+  // overland flow's molar water source) recompute. Inputs must not declare
+  // evaluators for these keys.
+  requireEvaluatorPrimary(surface_energy_source_ecosim_key_, tag_next_, *S_, name_)
+    .SetMesh(mesh_surf_)
+    ->SetGhosted(false)
+    ->SetComponent("cell", AmanziMesh::CELL, 1);
 
-  S_->Require<CompositeVector, CompositeVectorSpace>(surface_water_source_ecosim_key_ , tag_next_, surface_water_source_ecosim_key_)
-          .SetMesh(mesh_surf_)
-          ->SetGhosted(false)
-          ->SetComponent("cell", AmanziMesh::CELL, 1);
+  requireEvaluatorPrimary(surface_water_source_ecosim_key_, tag_next_, *S_, name_)
+    .SetMesh(mesh_surf_)
+    ->SetGhosted(false)
+    ->SetComponent("cell", AmanziMesh::CELL, 1);
 
-  S_->Require<CompositeVector, CompositeVectorSpace>(subsurface_energy_source_ecosim_key_ , tag_next_, subsurface_energy_source_ecosim_key_)
-          .SetMesh(mesh_)
-          ->SetGhosted(false)
-          ->SetComponent("cell", AmanziMesh::CELL, 1);
+  requireEvaluatorPrimary(subsurface_energy_source_ecosim_key_, tag_next_, *S_, name_)
+    .SetMesh(mesh_)
+    ->SetGhosted(false)
+    ->SetComponent("cell", AmanziMesh::CELL, 1);
 
-  S_->Require<CompositeVector, CompositeVectorSpace>(subsurface_water_source_ecosim_key_ , tag_next_, subsurface_water_source_ecosim_key_)
-          .SetMesh(mesh_)
-          ->SetGhosted(false)
-          ->SetComponent("cell", AmanziMesh::CELL, 1);
+  requireEvaluatorPrimary(subsurface_water_source_ecosim_key_, tag_next_, *S_, name_)
+    .SetMesh(mesh_)
+    ->SetGhosted(false)
+    ->SetComponent("cell", AmanziMesh::CELL, 1);
 
   /*S_->Require<CompositeVector, CompositeVectorSpace>(snow_temperature_key_ , tag_next_, snow_temperature_key_)
           .SetMesh(mesh_)
@@ -446,14 +467,12 @@ void EcoSIM::Initialize() {
   S_->GetW<CompositeVector>(snow_depth_key_, Tags::DEFAULT, "surface-snow_depth").PutScalar(0.0);
   S_->GetRecordW(snow_depth_key_, Tags::DEFAULT, "surface-snow_depth").set_initialized();
 
-  S_->GetW<CompositeVector>(surface_water_source_ecosim_key_, Tags::DEFAULT, surface_water_source_ecosim_key_).PutScalar(0.0);
-  S_->GetRecordW(surface_water_source_ecosim_key_, Tags::DEFAULT, surface_water_source_ecosim_key_).set_initialized();
-
-  S_->GetW<CompositeVector>(subsurface_water_source_ecosim_key_, Tags::DEFAULT, subsurface_water_source_ecosim_key_).PutScalar(0.0);
-  S_->GetRecordW(subsurface_water_source_ecosim_key_, Tags::DEFAULT, subsurface_water_source_ecosim_key_).set_initialized();
-
-  S_->GetW<CompositeVector>(subsurface_energy_source_ecosim_key_, Tags::DEFAULT, subsurface_energy_source_ecosim_key_).PutScalar(0.0);
-  S_->GetRecordW(subsurface_energy_source_ecosim_key_, Tags::DEFAULT, subsurface_energy_source_ecosim_key_).set_initialized();
+  for (const auto& key : { surface_energy_source_ecosim_key_, surface_water_source_ecosim_key_,
+                           subsurface_energy_source_ecosim_key_, subsurface_water_source_ecosim_key_ }) {
+    S_->GetW<CompositeVector>(key, tag_next_, name_).PutScalar(0.0);
+    S_->GetRecordW(key, tag_next_, name_).set_initialized();
+    changedEvaluatorPrimary(key, tag_next_, *S_);
+  }
 
   //S_->GetW<CompositeVector>(snow_temperature_key_, Tags::DEFAULT, snow_temperature_key_).PutScalar(0.0);
   //S_->GetRecordW(snow_temperature_key_, Tags::DEFAULT, snow_temperature_key_).set_initialized();
@@ -1209,11 +1228,11 @@ void EcoSIM::CopyFromEcoSIM_process(const int column,
   auto& rock_density = *(*S_->GetW<CompositeVector>(rock_density_key_, Tags::DEFAULT, rock_density_key_).ViewComponent("cell",false))(0);
   auto& cell_volume = *(*S_->GetW<CompositeVector>(cell_volume_key_, Tags::DEFAULT, cell_volume_key_).ViewComponent("cell",false))(0);
 
-  auto& surface_energy_source = *(*S_->GetW<CompositeVector>(surface_energy_source_ecosim_key_, Tags::DEFAULT, surface_energy_source_ecosim_key_).ViewComponent("cell", false))(0);
-  auto& subsurface_energy_source = *(*S_->GetW<CompositeVector>(subsurface_energy_source_ecosim_key_, Tags::DEFAULT, subsurface_energy_source_ecosim_key_).ViewComponent("cell", false))(0);
+  auto& surface_energy_source = *(*S_->GetW<CompositeVector>(surface_energy_source_ecosim_key_, tag_next_, name_).ViewComponent("cell", false))(0);
+  auto& subsurface_energy_source = *(*S_->GetW<CompositeVector>(subsurface_energy_source_ecosim_key_, tag_next_, name_).ViewComponent("cell", false))(0);
 
-  auto& surface_water_source = *(*S_->GetW<CompositeVector>(surface_water_source_ecosim_key_, Tags::DEFAULT, surface_water_source_ecosim_key_).ViewComponent("cell", false))(0);
-  auto& subsurface_water_source = *(*S_->GetW<CompositeVector>(subsurface_water_source_ecosim_key_, Tags::DEFAULT, subsurface_water_source_ecosim_key_).ViewComponent("cell", false))(0);
+  auto& surface_water_source = *(*S_->GetW<CompositeVector>(surface_water_source_ecosim_key_, tag_next_, name_).ViewComponent("cell", false))(0);
+  auto& subsurface_water_source = *(*S_->GetW<CompositeVector>(subsurface_water_source_ecosim_key_, tag_next_, name_).ViewComponent("cell", false))(0);
   auto& temp = *(*S_->GetW<CompositeVector>(T_key_, Tags::DEFAULT, "subsurface energy").ViewComponent("cell",false))(0);
   auto& thermal_conductivity = *(*S_->GetW<CompositeVector>(thermal_conductivity_key_, Tags::DEFAULT, thermal_conductivity_key_).ViewComponent("cell",false))(0);
   //auto& snow_temperature = *(*S_->GetW<CompositeVector>(snow_temperature_key_, Tags::DEFAULT, snow_temperature_key_).ViewComponent("cell", false))(0);
@@ -1303,6 +1322,12 @@ void EcoSIM::CopyFromEcoSIM_process(const int column,
   }
 
   CopyInternalStateFromEcoSIM_(bgc_internal_state_);
+
+  // tell the evaluators that use EcoSIM's sources that they changed
+  for (const auto& key : { surface_energy_source_ecosim_key_, surface_water_source_ecosim_key_,
+                           subsurface_energy_source_ecosim_key_, subsurface_water_source_ecosim_key_ }) {
+    changedEvaluatorPrimary(key, tag_next_, *S_);
+  }
 }
 
 // Copy the EcoSIM internal state from the ATS fields that hold it. All
