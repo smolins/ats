@@ -311,13 +311,11 @@ void AllocateBGCState(const BGCSizes* const sizes,
                            BGCState* state)*/
 
  void AllocateBGCState(BGCSizes* sizes, BGCState* state,
-                       int ncells_per_col_, int num_components, int num_columns, int num_pfts,
-                       int num_snow_layers) {
+                       int ncells_per_col_, int num_components, int num_columns, int num_pfts) {
    sizes->ncells_per_col_ = ncells_per_col_;
    sizes->num_components = num_components;
    sizes->num_columns = num_columns;
    sizes->num_pfts = num_pfts;
-   sizes->num_snow_layers = num_snow_layers;
 
    AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->liquid_density));
    AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->gas_density));
@@ -331,36 +329,10 @@ void AllocateBGCState(const BGCSizes* const sizes,
    AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->bulk_density));
    AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->subsurface_energy_source));
    AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->subsurface_water_source));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->canopy_snow));
    AllocateBGCVectorDouble(sizes->num_columns, &(state->surface_water_source));
    AllocateBGCVectorDouble(sizes->num_columns, &(state->surface_energy_source));
    AllocateBGCVectorDouble(sizes->num_columns, &(state->snow_depth));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->canopy_longwave_radiation));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->boundary_latent_heat_flux));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->boundary_sensible_heat_flux));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->canopy_surface_water));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->transpiration));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->evaporation_canopy));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->evaporation_bare_ground));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->evaporation_litter));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->evaporation_snow));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->sublimation_snow));
    AllocateBGCTensorDouble(sizes->ncells_per_col_, sizes->num_columns, sizes->num_components, &(state->mole_fraction));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_dry_swe));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_liquid));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_ice));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_temperature));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_temperature_c));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_density));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_thickness));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_volume));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_heat_capacity));
-   AllocateBGCMatrixDouble(sizes->num_snow_layers, sizes->num_columns, &(state->snow_vapor_diffusivity));
-   AllocateBGCMatrixDouble(sizes->num_pfts, sizes->num_columns, &(state->canopy_water_pft));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->litter_water));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->litter_ice));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->litter_temperature));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->litter_heat_capacity));
    //ALQUIMIA_ASSERT(state->total_mobile.data != NULL);
  }  /* end AllocateBGCState() */
 
@@ -381,34 +353,29 @@ void AllocateBGCState(const BGCSizes* const sizes,
      FreeBGCVectorDouble(&(state->surface_energy_source));
      FreeBGCVectorDouble(&(state->surface_water_source));
      FreeBGCVectorDouble(&(state->snow_depth));
-     FreeBGCVectorDouble(&(state->canopy_longwave_radiation));
-     FreeBGCVectorDouble(&(state->boundary_latent_heat_flux));
-     FreeBGCVectorDouble(&(state->boundary_sensible_heat_flux));
-     FreeBGCVectorDouble(&(state->canopy_surface_water));
-     FreeBGCVectorDouble(&(state->transpiration));
-     FreeBGCVectorDouble(&(state->evaporation_canopy));
-     FreeBGCVectorDouble(&(state->evaporation_bare_ground));
-     FreeBGCVectorDouble(&(state->evaporation_litter));
-     FreeBGCVectorDouble(&(state->evaporation_snow));
-     FreeBGCVectorDouble(&(state->sublimation_snow));
      FreeBGCTensorDouble(&(state->mole_fraction));
-     FreeBGCMatrixDouble(&(state->snow_dry_swe));
-     FreeBGCMatrixDouble(&(state->snow_liquid));
-     FreeBGCMatrixDouble(&(state->snow_ice));
-     FreeBGCMatrixDouble(&(state->snow_temperature));
-     FreeBGCMatrixDouble(&(state->snow_temperature_c));
-     FreeBGCMatrixDouble(&(state->snow_density));
-     FreeBGCMatrixDouble(&(state->snow_thickness));
-     FreeBGCMatrixDouble(&(state->snow_volume));
-     FreeBGCMatrixDouble(&(state->snow_heat_capacity));
-     FreeBGCMatrixDouble(&(state->snow_vapor_diffusivity));
-     FreeBGCMatrixDouble(&(state->canopy_water_pft));
-     FreeBGCVectorDouble(&(state->litter_water));
-     FreeBGCVectorDouble(&(state->litter_ice));
-     FreeBGCVectorDouble(&(state->litter_temperature));
-     FreeBGCVectorDouble(&(state->litter_heat_capacity));
    }
  }  /* end FreeAlquimiaState() */
+
+ /*******************************************************************************
+  **
+  **  EcoSIM internal state
+  **
+  *******************************************************************************/
+ void AllocateBGCInternalState(BGCInternalState* internal_state, int layout_version,
+                               int num_entries, int num_columns, int values_per_column) {
+   internal_state->layout_version = layout_version;
+   internal_state->num_entries = num_entries;
+   internal_state->num_columns = num_columns;
+   internal_state->values_per_column = values_per_column;
+   AllocateBGCMatrixDouble(values_per_column, num_columns, &(internal_state->values));
+ }  /* end AllocateBGCInternalState() */
+
+ void FreeBGCInternalState(BGCInternalState* internal_state) {
+   if (internal_state != NULL) {
+     FreeBGCMatrixDouble(&(internal_state->values));
+   }
+ }  /* end FreeBGCInternalState() */
 
  /*******************************************************************************
   **

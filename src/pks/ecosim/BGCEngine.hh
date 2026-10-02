@@ -28,6 +28,16 @@
 namespace Amanzi {
 namespace EcoSIM {
 
+// One entry of the EcoSIM internal state layout (see ATSStateRegistryMod.F90)
+struct BGCInternalStateEntry {
+  std::string ats_name;    // ATS field basename, key "surface-<ats_name>"
+  std::string ecosim_name; // EcoSIM variable holding it
+  std::string units;       // as annotated in EcoSIM
+  std::string description;
+  int num_components;      // per column
+  int role;                // kBGCRolePrivate or kBGCRoleOutput
+};
+
 class BGCEngine {
  public:
 
@@ -54,8 +64,7 @@ class BGCEngine {
                  int ncells_per_col_,
                  int num_components,
                  int num_columns,
-                 int num_pfts,
-                 int num_snow_layers);
+                 int num_pfts);
   
 
   // Frees the data structures that hold the chemical state information.
@@ -67,6 +76,7 @@ class BGCEngine {
 
   bool Setup(BGCProperties& properties,
                BGCState& state,
+               BGCInternalState& internal_state,
                BGCSizes& sizes,
                int num_iterations,
                int num_columns,
@@ -75,9 +85,20 @@ class BGCEngine {
   bool Advance(const double delta_time,
                BGCProperties& properties,
                BGCState& state,
+               BGCInternalState& internal_state,
                BGCSizes& sizes,
                int num_iterations,
                int num_columns);
+
+  // Layout of the EcoSIM internal state. Static: valid before Setup.
+  int InternalStateLayoutVersion() const;
+  std::vector<BGCInternalStateEntry> InternalStateLayout(const BGCSizes& sizes) const;
+
+  // Allocates/frees the container for the internal state of num_columns columns.
+  void InitInternalState(BGCInternalState& internal_state,
+                         const std::vector<BGCInternalStateEntry>& layout,
+                         int num_columns);
+  void FreeInternalState(BGCInternalState& internal_state);
 
   void CopyBGCState(const BGCState* const source,
                          BGCState* destination);

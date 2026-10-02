@@ -58,8 +58,9 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
     * `"Number of PFTs [1-5] "`" ``[int]`` **1** Number of PFTs allowed in every column. 5
      is the maximum number allowed
 
-   * `"number of snow layers`" ``[int]`` **5** Number of EcoSIM snowpack layers. Must match
-     EcoSIM's compiled JS.
+   * `"visualize ecosim state`" ``[Array(string)]`` **{}** EcoSIM internal state variables
+     (by ATS name, see the table below) to write to visualization output. Carried state is
+     not visualized by default; outputs always are. Unknown names are an error.
 
    * `"domain name`" ``[string]`` **domain**
 
@@ -90,36 +91,49 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    `"snow depth`"                        **surface-snow_depth**
    `"snow_albedo`"                       **surface-snow_albedo**
    `"snow temperature`"                  **surface-snow_temperature**
-   `"canopy longwave radiation`"         **surface-canopy_longwave_radiation**
-   `"canopy latent heat`"                **surface-canopy_latent_heat**
-   `"canopy sensible heat`"              **surface-canopy_sensible_heat**
-   `"canopy surface water`"              **surface-canopy_surface_water**
-   `"evapotranspiration`"                **surface-evapotranspiration**
-   `"evaporation ground`"                **surface-evaporation_ground**
-   `"evaporation litter`"                **surface-evaporation_litter**
-   `"evaporation snow`"                  **surface-evaporation_snow**
-   `"sublimation snow`"                  **surface-sublimation_snow**
    `"LAI`"                               **surface-LAI**
    `"SAI`"                               **surface-SAI**
    `"vegetation type`"                   **surface-vegetation_type**
 
-   //EcoSIM internal state, owned and checkpointed so that restart is exact
-   //(per snow layer: num_snow_layers components; canopy water: num_pfts components)
-   `"snow layer dry swe`"                **surface-snow_layer_dry_swe**  [m^3]
-   `"snow layer liquid`"                 **surface-snow_layer_liquid**  [m^3]
-   `"snow layer ice`"                    **surface-snow_layer_ice**  [m^3]
-   `"snow layer temperature`"            **surface-snow_layer_temperature**  [K]
-   `"snow layer temperature celsius`"    **surface-snow_layer_temperature_c**  [C]
-   `"snow layer density`"                **surface-snow_layer_density**  [Mg m^-3]
-   `"snow layer thickness`"              **surface-snow_layer_thickness**  [m]
-   `"snow layer volume`"                 **surface-snow_layer_volume**  [m^3]
-   `"snow layer heat capacity`"          **surface-snow_layer_heat_capacity**  [MJ K^-1]
-   `"snow layer vapor diffusivity`"      **surface-snow_layer_vapor_diffusivity**
-   `"canopy water pft`"                  **surface-canopy_water_pft**  [m^3]
-   `"litter water`"                      **surface-litter_water**  [m^3]
-   `"litter ice`"                        **surface-litter_ice**  [m^3]
-   `"litter temperature`"                **surface-litter_temperature**  [K]
-   `"litter heat capacity`"              **surface-litter_heat_capacity**  [MJ K^-1]
+   ECOSIM INTERNAL STATE
+
+   EcoSIM-private data that ATS stores on EcoSIM's behalf. The list, its order
+   and units are defined only in EcoSIM's ATSStateRegistryMod.F90; ATS creates
+   one surface field per entry from the layout reported at setup (the mapping is
+   also printed at verbosity "high"). Units are EcoSIM's ("d-2" = per grid cell
+   area). PRIVATE entries are carried between EcoSIM steps and checkpointed;
+   OUTPUT entries are visualized and not checkpointed. A checkpoint records the
+   layout version, and restarting with a different layout is an error.
+
+   ATS field                                  EcoSIM variable       comps   units        role
+   surface-snow_layer_dry_swe                 VLDrySnoWE_snvr       JS      m3 d-2       private
+   surface-snow_layer_liquid                  VLWatSnow_snvr        JS      m3 d-2       private
+   surface-snow_layer_ice                     VLIceSnow_snvr        JS      m3 d-2       private
+   surface-snow_layer_temperature             TKSnow_snvr           JS      K            private
+   surface-snow_layer_temperature_c           TCSnow_snvr           JS      C            private
+   surface-snow_layer_density                 SnoDens_snvr          JS      Mg m-3       private
+   surface-snow_layer_thickness               SnowThickL_snvr       JS      m            private
+   surface-snow_layer_volume                  VLSnoDWIprev_snvr     JS      m3 d-2       private
+   surface-snow_layer_heat_capacity           VLHeatCapSnow_snvr    JS      MJ m-3 K-1   private
+   surface-snow_layer_vapor_diffusivity       H2OVapDifsc_snvr      JS      m2 h-1       private
+   surface-litter_water                       VLWatMicP_vr(0)       1       m3 d-2       private
+   surface-litter_ice                         VLiceMicP_vr(0)       1       m3 d-2       private
+   surface-litter_temperature                 TKS_vr(0)             1       K            private
+   surface-litter_heat_capacity               VHeatCapacity_vr(0)   1       MJ m-3 K-1   private
+   surface-canopy_water_pft                   WatHeldOnCanopy_pft   npft    m3 d-2       private
+   surface-canopy_snow                        SnowOnCanopy_pft      npft    m3 d-2       private
+   surface-canopy_longwave_emission_prev      LWRadCanGPrev_col     1       MJ h-1       private
+   surface-canopy_latent_flux_x_resistance    TLEX_col              1       MJ m-1       private
+   surface-canopy_sensible_flux_x_resistance  TSHX_col              1       MJ m-1       private
+   surface-transpiration                      a_Transpiration       1       m3 d-2 h-1   output
+   surface-evaporation_canopy                 a_EvapCan             1       m2 d-2 h-1   output
+   surface-evaporation_ground                 a_EvapGrnd            1       unannotated  output
+   surface-evaporation_litter                 a_EvapLitr            1       unannotated  output
+   surface-evaporation_snow                   a_EvapSnow            1       m3 d-2 h-1   output
+   surface-sublimation_snow                   a_Sublim              1       m3 d-2 h-1   output
+   surface-canopy_surface_water               WatHeldOnCanopy_col   1       m3 d-2       output
+
+   JS is EcoSIM's number of snow layers (5); npft = min("number of pfts", 5).
 
    //General Flow Transport Energy
    `"mole fraction`"                     **mole_fraction**
@@ -145,7 +159,6 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
 #include <map>
 #include <vector>
 #include <string>
-#include <tuple>
 
 #include "Epetra_MultiVector.h"
 #include "Teuchos_ParameterList.hpp"
@@ -245,9 +258,9 @@ class EcoSIM : public PK_Physical_Default {
                  const BGCAuxiliaryData& aux_data,
                const Tag& water_tag = Tags::DEFAULT);
 
-   // EcoSIM internal state that persists between advances
-   void CopyInternalStateToEcoSIM_(BGCState& state);
-   void CopyInternalStateFromEcoSIM_(const BGCState& state);
+   // EcoSIM internal state (see ECOSIM INTERNAL STATE above)
+   void CopyInternalStateToEcoSIM_(BGCInternalState& internal_state);
+   void CopyInternalStateFromEcoSIM_(const BGCInternalState& internal_state);
 
    int InitializeSingleProcess(int proc);
 
@@ -356,32 +369,15 @@ class EcoSIM : public PK_Physical_Default {
   Key subsurface_water_source_ecosim_key_;
   Key snow_depth_key_;
   Key snow_albedo_key_;
-  Key canopy_lw_key_;
-  Key canopy_latent_heat_key_;
-  Key canopy_sensible_heat_key_;
-  Key canopy_surface_water_key_;
-  Key transpiration_key_;
-  Key evaporation_canopy_key_;
-  Key evaporation_ground_key_;
-  Key evaporation_litter_key_;
-  Key evaporation_snow_key_;
-  Key sublimation_snow_key_;
   Key snow_temperature_key_;
   Key cap_pres_key_;
   Key T_surf_key_;
-  Key canopy_snow_key_;
 
-  // EcoSIM internal state (snowpack layers, surface litter, canopy water)
-  // that persists between advances. ATS owns a copy of each piece in a
-  // surface field so that it is checkpointed and restored on restart.
-  struct InternalStateField {
-    Key key;
-    int num_components;
-    BGCMatrixDouble BGCState::*matrix; // num_components x num_columns, or
-    BGCVectorDouble BGCState::*vector; // num_columns
-  };
-  std::vector<InternalStateField> internal_state_;
-  int num_snow_layers_;
+  // EcoSIM internal state: layout reported by EcoSIM, one ATS field per entry
+  std::vector<BGCInternalStateEntry> internal_state_layout_;
+  std::vector<Key> internal_state_keys_;
+  std::vector<std::string> visualize_internal_state_;
+  Key internal_state_version_key_;
 
   Teuchos::RCP<BGCEngine> bgc_engine_;
 
@@ -393,6 +389,7 @@ class EcoSIM : public PK_Physical_Default {
   BGCProperties bgc_props_;
   BGCAuxiliaryData bgc_aux_data_;
   BGCSizes bgc_sizes_;
+  BGCInternalState bgc_internal_state_ = {};
 
   Teuchos::RCP<Epetra_SerialDenseVector> column_vol_save;
   Teuchos::RCP<Epetra_SerialDenseVector> column_wc_save;

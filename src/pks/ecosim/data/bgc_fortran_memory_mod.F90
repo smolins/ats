@@ -43,7 +43,7 @@ module bgc_fortran_memory_mod
 
   interface
     subroutine AllocateBGCState(sizes, state, ncells_per_col_, num_components, &
-        num_columns, num_pfts, num_snow_layers) bind(C, name='AllocateBGCState')
+        num_columns, num_pfts) bind(C, name='AllocateBGCState')
       use BGCContainers_module, only : BGCSizes, BGCState
       use, intrinsic :: iso_c_binding, only: c_int
       implicit none
@@ -53,7 +53,6 @@ module bgc_fortran_memory_mod
       integer(c_int),VALUE :: num_components
       integer(c_int),VALUE :: num_columns
       integer(c_int),VALUE :: num_pfts
-      integer(c_int),VALUE :: num_snow_layers
     end subroutine
   end interface
   interface
@@ -97,11 +96,12 @@ module bgc_fortran_memory_mod
 
 
   interface
-    subroutine Setup(properties, state, sizes, num_iterations, num_columns, ncells_per_col_) bind(C)
+    subroutine Setup(properties, state, internal_state, sizes, num_iterations, num_columns, &
+                     ncells_per_col_) bind(C)
 
       use, intrinsic :: iso_c_binding, only: c_char, c_bool, c_ptr, c_int
       use BGCContainers_module, only : BGCSizes,BGCProperties,&
-               BGCState
+               BGCState, BGCInternalState
       IMPORT
       implicit none
 
@@ -111,6 +111,7 @@ module bgc_fortran_memory_mod
 
       type(BGCProperties) :: properties
       type(BGCState) :: state
+      type(BGCInternalState) :: internal_state
       type(BGCSizes) :: sizes
 
     end subroutine
@@ -128,10 +129,11 @@ module bgc_fortran_memory_mod
 
   ! take one (or more?) reaction steps in operator split mode
   interface
-    subroutine Advance(delta_t, properties, state, sizes, num_iterations, num_columns) bind(C)
+    subroutine Advance(delta_t, properties, state, internal_state, sizes, num_iterations, &
+                       num_columns) bind(C)
       use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_int
       use BGCContainers_module, only : BGCSizes,BGCProperties,&
-               BGCState
+               BGCState, BGCInternalState
       implicit none
 
       real(c_double),VALUE :: delta_t
@@ -140,6 +142,7 @@ module bgc_fortran_memory_mod
 
       type(BGCProperties) :: properties
       type(BGCState) :: state
+      type(BGCInternalState) :: internal_state
       type(BGCSizes) :: sizes
     end subroutine
   end interface
@@ -158,11 +161,11 @@ module bgc_fortran_memory_mod
 
   end subroutine BGC_Fortran_DataTest
 
-  subroutine BGC_Fortran_Setup(this, properties, state, sizes, num_iterations,&
+  subroutine BGC_Fortran_Setup(this, properties, state, internal_state, sizes, num_iterations,&
                                num_columns, ncells_per_col_)
     use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_double, c_f_procpointer
     use BGCContainers_module, only : BGCSizes, BGCProperties,&
-             BGCState
+             BGCState, BGCInternalState
 
     implicit none
     class(BGCFortranInterface) :: this
@@ -173,12 +176,13 @@ module bgc_fortran_memory_mod
     integer(c_int) :: ncells_per_col_
     type(BGCProperties) :: properties
     type(BGCState) :: state
+    type(BGCInternalState) :: internal_state
     type(BGCSizes) :: sizes
 
     procedure(Setup), pointer :: engine_Setup
 
     call c_f_procpointer(this%c_interface%Setup,engine_Setup)
-    call engine_Setup(properties, state, sizes, num_iterations, &
+    call engine_Setup(properties, state, internal_state, sizes, num_iterations, &
                       num_columns, ncells_per_col_)
 
   end subroutine BGC_Fortran_Setup
@@ -195,10 +199,11 @@ module bgc_fortran_memory_mod
 
   end subroutine BGC_Fortran_Shutdown
 
-  subroutine BGC_Fortran_Advance(this, delta_t, properties, state, sizes, num_iterations, num_columns)
+  subroutine BGC_Fortran_Advance(this, delta_t, properties, state, internal_state, sizes, &
+                                 num_iterations, num_columns)
     use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_double, c_f_procpointer
     use BGCContainers_module, only : BGCSizes, BGCProperties,&
-             BGCState
+             BGCState, BGCInternalState
 
     implicit none
     class(BGCFortranInterface) :: this
@@ -208,12 +213,13 @@ module bgc_fortran_memory_mod
     integer(c_int) :: num_iterations
     type(BGCProperties) :: properties
     type(BGCState) :: state
+    type(BGCInternalState) :: internal_state
     type(BGCSizes) :: sizes
 
     procedure(Advance), pointer :: engine_Advance
 
     call c_f_procpointer(this%c_interface%Advance,engine_Advance)
-    call engine_Advance(delta_t, properties, state, sizes, num_iterations, num_columns)
+    call engine_Advance(delta_t, properties, state, internal_state, sizes, num_iterations, num_columns)
   end subroutine BGC_Fortran_Advance
 
   subroutine Create_Fortran_BGC_Interface(this,engine_name)

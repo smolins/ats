@@ -71,9 +71,16 @@ extern "C" {
                         int ncells_per_col_,
                         int num_components,
                         int num_columns,
-                        int num_pfts,
-                        int num_snow_layers);
+                        int num_pfts);
   void FreeBGCState(BGCState* state);
+
+  /* EcoSIM internal state */
+  void AllocateBGCInternalState(BGCInternalState* internal_state,
+                                int layout_version,
+                                int num_entries,
+                                int num_columns,
+                                int values_per_column);
+  void FreeBGCInternalState(BGCInternalState* internal_state);
 
   /* Auxiliary Data
   void AllocateBGCAuxiliaryData(const BGCSizes* const sizes,

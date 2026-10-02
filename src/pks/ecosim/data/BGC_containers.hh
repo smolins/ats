@@ -101,7 +101,6 @@ extern const int kBGCMaxWordLength;
     int num_components;
     int num_columns;
     int num_pfts;
-    int num_snow_layers;
   } BGCSizes;
 
   typedef struct {
@@ -117,42 +116,27 @@ extern const int kBGCMaxWordLength;
     BGCMatrixDouble bulk_density;
     BGCMatrixDouble subsurface_water_source;
     BGCMatrixDouble subsurface_energy_source;
-    BGCMatrixDouble canopy_snow;
     BGCVectorDouble surface_energy_source;
     BGCVectorDouble surface_water_source;
     BGCVectorDouble snow_depth;
-    BGCVectorDouble canopy_longwave_radiation;
-    BGCVectorDouble boundary_latent_heat_flux;
-    BGCVectorDouble boundary_sensible_heat_flux;
-    BGCVectorDouble canopy_surface_water;
-    BGCVectorDouble transpiration;
-    BGCVectorDouble evaporation_canopy;
-    BGCVectorDouble evaporation_bare_ground;
-    BGCVectorDouble evaporation_litter;
-    BGCVectorDouble evaporation_snow;
-    BGCVectorDouble sublimation_snow;
     BGCTensorDouble mole_fraction;
-    /* EcoSIM internal state carried between advances, checkpointed by ATS.
-       Must match the order in EcoSIM's BGC_containers.F90.
-       Snow layer arrays are num_snow_layers x num_columns. */
-    BGCMatrixDouble snow_dry_swe;
-    BGCMatrixDouble snow_liquid;
-    BGCMatrixDouble snow_ice;
-    BGCMatrixDouble snow_temperature;
-    BGCMatrixDouble snow_temperature_c;
-    BGCMatrixDouble snow_density;
-    BGCMatrixDouble snow_thickness;
-    BGCMatrixDouble snow_volume;
-    BGCMatrixDouble snow_heat_capacity;
-    BGCMatrixDouble snow_vapor_diffusivity;
-    /* num_pfts x num_columns */
-    BGCMatrixDouble canopy_water_pft;
-    /* surface litter (EcoSIM soil layer 0), num_columns */
-    BGCVectorDouble litter_water;
-    BGCVectorDouble litter_ice;
-    BGCVectorDouble litter_temperature;
-    BGCVectorDouble litter_heat_capacity;
   } BGCState;
+
+  /* EcoSIM-private data (carried state and EcoSIM-only outputs), packed by
+     EcoSIM's ATSStateRegistryMod. ATS stores it without interpreting it; the
+     layout is queried with ecosim_internal_state_entry(). Must match
+     BGCInternalState in EcoSIM's BGC_containers.F90. */
+  typedef struct {
+    int layout_version;
+    int num_entries;
+    int num_columns;
+    int values_per_column;
+    BGCMatrixDouble values; /* values_per_column x num_columns */
+  } BGCInternalState;
+
+  /* roles of internal state entries, and string lengths of their layout */
+  enum { kBGCRolePrivate = 0, kBGCRoleOutput = 1 };
+  enum { kBGCStateNameLength = 64, kBGCStateUnitsLength = 32, kBGCStateDescriptionLength = 128 };
 
   typedef struct {
     BGCMatrixDouble liquid_saturation;
@@ -213,6 +197,7 @@ extern const int kBGCMaxWordLength;
     void (*Setup)(
       BGCProperties* properties,
       BGCState* state,
+      BGCInternalState* internal_state,
       BGCSizes* sizes,
       int num_iterations,
       int num_columns,
@@ -226,6 +211,7 @@ extern const int kBGCMaxWordLength;
       double delta_t,
       BGCProperties* properties,
       BGCState* state,
+      BGCInternalState* internal_state,
       BGCSizes* sizes,
       int num_iterations,
       int num_columns);
