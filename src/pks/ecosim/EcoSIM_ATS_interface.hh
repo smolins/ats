@@ -122,9 +122,9 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    surface-litter_heat_capacity               VHeatCapacity_vr(0)   1       MJ m-3 K-1   private
    surface-canopy_water_pft                   WatHeldOnCanopy_pft   npft    m3 d-2       private
    surface-canopy_snow                        SnowOnCanopy_pft      npft    m3 d-2       private
-   surface-canopy_longwave_emission_prev      LWRadCanGPrev_col     1       MJ h-1       private
-   surface-canopy_latent_flux_x_resistance    TLEX_col              1       MJ m-1       private
-   surface-canopy_sensible_flux_x_resistance  TSHX_col              1       MJ m-1       private
+   surface-canopy_longwave_radiation          LWRadCanGPrev_col     1       MJ h-1       private (*)
+   surface-canopy_latent_heat                 TLEX_col              1       MJ m-1       private (*)
+   surface-canopy_sensible_heat               TSHX_col              1       MJ m-1       private (*)
    surface-transpiration                      a_Transpiration       1       m3 d-2 h-1   output
    surface-evaporation_canopy                 a_EvapCan             1       m2 d-2 h-1   output
    surface-evaporation_ground                 a_EvapGrnd            1       unannotated  output
@@ -134,6 +134,19 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    surface-canopy_surface_water               WatHeldOnCanopy_col   1       m3 d-2       output
 
    JS is EcoSIM's number of snow layers (5); npft = min("number of pfts", 5).
+
+   (*) EcoSIM carry-over values, NOT fluxes for ATS to use, despite their names.
+       EcoSIM saves them at the end of each step and reads them at the start of
+       the next one:
+       - canopy_longwave_radiation: canopy longwave emission of the previous
+         step, total per grid cell [MJ h-1] (not per area); added to the
+         ground's incoming longwave.
+       - canopy_latent_heat, canopy_sensible_heat: latent/sensible heat flux x
+         boundary-layer resistance, summed over the previous step [MJ m-1].
+         EcoSIM converts them back to canopy-air vapor pressure and temperature
+         (VPQ = VPA - TLEX/(EvapLHTC*area), TKQ = Tair - TSHX/(cp_air*area)).
+       ATS's own surface energy balance fluxes are qE_latent_heat and
+       qE_sensible_heat [W m-2]; these fields are unrelated to them.
 
    //General Flow Transport Energy
    `"mole fraction`"                     **mole_fraction**
