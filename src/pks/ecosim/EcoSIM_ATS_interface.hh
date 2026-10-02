@@ -196,6 +196,9 @@ class EcoSIM : public PK_Physical_Default {
   ~EcoSIM();
 
   // is a PK
+  // -- parse the parameter list; declares evaluators other PKs depend on
+  virtual void parseParameterList() override;
+
   // -- Setup data
   //virtual void Setup(const Teuchos::Ptr<State>&S);
   virtual void Setup() final;

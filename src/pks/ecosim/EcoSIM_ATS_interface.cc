@@ -97,23 +97,6 @@ EcoSIM::EcoSIM(Teuchos::ParameterList& pk_tree,
     subsurface_water_source_ecosim_key_ =
       Keys::readKey(*plist_, domain_, "subsurface water source ecosim", "subsurface_ecosim_water_source");
 
-    // These sources are primary variables owned by this PK (see Setup). PKs
-    // that use them (e.g. overland flow) are set up before this one, so
-    // declare the evaluator type now, before any Setup runs.
-    for (const auto& key : { surface_energy_source_ecosim_key_, surface_water_source_ecosim_key_,
-                             subsurface_energy_source_ecosim_key_, subsurface_water_source_ecosim_key_ }) {
-      if (S_->HasEvaluatorList(key) &&
-          S_->GetEvaluatorList(key).get<std::string>("evaluator type", "primary variable") !=
-            "primary variable") {
-        Errors::Message msg;
-        msg << "EcoSIM: \"" << key << "\" is computed by the EcoSIM PK; remove its evaluator \""
-            << S_->GetEvaluatorList(key).get<std::string>("evaluator type")
-            << "\" from the state's evaluators list.";
-        Exceptions::amanzi_throw(msg);
-      }
-      S_->GetEvaluatorList(key).set<std::string>("evaluator type", "primary variable");
-    }
-
     //Other
     cell_volume_key_ = Keys::readKey(*plist_, domain_, "cell volume", "cell_volume");
     //ecosim_aux_data_key_ = Keys::readKey(*plist_, domain_, "ecosim aux data", "ecosim_aux_data");
@@ -203,6 +186,30 @@ EcoSIM::EcoSIM(Teuchos::ParameterList& pk_tree,
     bgc_engine_ = Teuchos::rcp(new BGCEngine(engine_name, engine_inputfile));
   }
 
+
+// -- Parse the parameter list and declare evaluators other PKs depend on
+void EcoSIM::parseParameterList()
+{
+  PK_Physical_Default::parseParameterList();
+
+  // These sources are primary variables owned by this PK (see Setup). PKs
+  // that use them (e.g. overland flow) are set up before this one, so declare
+  // the evaluator type here: parseParameterList() runs for every PK before
+  // any Setup().
+  for (const auto& key : { surface_energy_source_ecosim_key_, surface_water_source_ecosim_key_,
+                           subsurface_energy_source_ecosim_key_, subsurface_water_source_ecosim_key_ }) {
+    if (S_->HasEvaluatorList(key) &&
+        S_->GetEvaluatorList(key).get<std::string>("evaluator type", "primary variable") !=
+          "primary variable") {
+      Errors::Message msg;
+      msg << "EcoSIM: \"" << key << "\" is computed by the EcoSIM PK; remove its evaluator \""
+          << S_->GetEvaluatorList(key).get<std::string>("evaluator type")
+          << "\" from the state's evaluators list.";
+      Exceptions::amanzi_throw(msg);
+    }
+    S_->GetEvaluatorList(key).set<std::string>("evaluator type", "primary variable");
+  }
+}
 
 // -- Destroy ansilary data structures.
 EcoSIM::~EcoSIM()
