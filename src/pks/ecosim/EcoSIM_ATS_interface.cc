@@ -1324,8 +1324,16 @@ void EcoSIM::CopyFromEcoSIM_process(const int column,
     //ColumnToField_(col, subsurface_energy_source, col_ss_energy_source.ptr());
     //ColumnToField_(col, snow_temperature, col_snow_temperature.ptr());
     //ColumnToField_(col, canopy_snow, col_canopy_snow.ptr());
-    
-    
+
+
+  }
+
+  // EcoSIM gives the subsurface water source as water volume per grid cell
+  // (i.e. per ATS cell) per hour [m^3 h^-1]. Subsurface flow multiplies its
+  // source by cell volume, so it needs [mol m^-3 s^-1]:
+  //   q = S * molar density [mol m^-3] / (3600 [s h^-1] * cell volume [m^3])
+  for (int c = 0; c != subsurface_water_source.MyLength(); ++c) {
+    subsurface_water_source[c] *= liquid_density[c] / (3600.0 * cell_volume[c]);
   }
 
   CopyInternalStateFromEcoSIM_(bgc_internal_state_);

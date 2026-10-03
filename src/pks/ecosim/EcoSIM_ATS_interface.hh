@@ -74,10 +74,10 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
 
    DEPENDENCIES
    //Sources
-   `"surface water source ecosim`"     **surface-ecosim_water_source**
+   `"surface water source ecosim`"     **surface-ecosim_water_source**   [m s^-1]
    `"surface energy source ecosim`"    **surface-ecosim_source**
-   `"subsurface water source ecosim`"  **ecosim_water_source**
-   `"surface water source ecosim`"     **surface-ecosim_water_source**
+   `"subsurface water source ecosim`"  **subsurface_ecosim_water_source**   [mol m^-3 s^-1]
+     (EcoSIM's [m^3 h^-1] per cell, converted with molar_density_liquid and cell_volume)
 
    //surface balance variables
    `"incoming shortwave radiation`"      **surface-incoming_shortwave_radiation**
