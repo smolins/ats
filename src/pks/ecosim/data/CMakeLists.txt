@@ -24,7 +24,6 @@ include_directories(${ECOSIM_INCLUDE_DIRS})
 set(ats_ecosim_data_src_files
     EcoMemory.cc
     EcoContainers.cc
-    bgc_fortran_memory_mod.F90
 )
 
 set(ats_ecosim_data_inc_files

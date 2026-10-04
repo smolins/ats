@@ -45,7 +45,7 @@
  **
  *******************************************************************************/
 
-#include <iostream>
+
 #include "EcoMemory.hh"
 #include "EcoContainers.hh"
 
@@ -61,778 +61,317 @@ static inline int nearest_power_of_2(int n)
 
 /*******************************************************************************
  **
- **  BGC Vectors
+ **  Vectors
  **
  *******************************************************************************/
-void AllocateBGCVectorDouble(const int size, BGCVectorDouble* vector) {
+void AllocateEcoVectorDouble(const int size, EcoVectorDouble* vector) {
   if (size > 0) {
     vector->size = size;
     vector->capacity = nearest_power_of_2(size);
     vector->data = (double*) calloc((size_t)vector->capacity, sizeof(double));
-    //ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->capacity = 0;
     vector->data = NULL;
   }
-}  /* end AllocateBGCVectorDouble() */
+}
 
-void FreeBGCVectorDouble(BGCVectorDouble* vector) {
+void FreeEcoVectorDouble(EcoVectorDouble* vector) {
   if (vector != NULL) {
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
     vector->capacity = 0;
   }
-}  /* end FreeBGCVectorDouble() */
+}
 
-void AllocateBGCVectorInt(const int size, BGCVectorInt* vector) {
+void AllocateEcoVectorInt(const int size, EcoVectorInt* vector) {
   if (size > 0) {
     vector->size = size;
     vector->capacity = nearest_power_of_2(size);
     vector->data = (int*) calloc((size_t)vector->capacity, sizeof(int));
-    //ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->capacity = 0;
     vector->data = NULL;
   }
-}  /* end AllocateBGCVectorInt() */
+}
 
-void FreeBGCVectorInt(BGCVectorInt* vector) {
+void FreeEcoVectorInt(EcoVectorInt* vector) {
   if (vector != NULL) {
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
     vector->capacity = 0;
   }
-}  /* end FreeBGCVectorInt() */
-
-void AllocateBGCVectorString(const int size, BGCVectorString* vector) {
-  int i;
-  if (size > 0) {
-    vector->size = size;
-    vector->capacity = nearest_power_of_2(size);
-    vector->data = (char**) calloc((size_t)vector->capacity, sizeof(char*));
-    //ALQUIMIA_ASSERT(NULL != vector->data);
-    for (i = 0; i < vector->size; ++i) {
-      vector->data[i] = (char*) calloc((size_t)kBGCMaxStringLength, sizeof(char));
-      //ALQUIMIA_ASSERT(NULL != vector->data[i]);
-    }
-  } else {
-    vector->size = 0;
-    vector->capacity = 0;
-    vector->data = NULL;
-  }
-}  /* end AllocateBGCVectorString() */
-
-void FreeBGCVectorString(BGCVectorString* vector) {
-  int i;
-  if (vector != NULL) {
-    for (i = 0; i < vector->size; ++i) {
-      free(vector->data[i]);
-    }
-    free(vector->data);
-    vector->data = NULL;
-    vector->size = 0;
-    vector->capacity = 0;
-  }
-}  /* end FreeBGCVectorString() */
+}
 
 /*******************************************************************************
  **
- **  BGC Matrix
+ **  Matrices
  **
  *******************************************************************************/
-void AllocateBGCMatrixDouble(const int cells, const int columns, BGCMatrixDouble* matrix) {
-  if ((cells > 0 ) || (columns > 0)){
+void AllocateEcoMatrixDouble(const int cells, const int columns, EcoMatrixDouble* matrix) {
+  if ((cells > 0) || (columns > 0)) {
     matrix->cells = cells;
     matrix->columns = columns;
     matrix->capacity_cells = nearest_power_of_2(cells);
     matrix->capacity_columns = nearest_power_of_2(columns);
-    matrix->data = (double*) calloc((size_t)matrix->capacity_cells * matrix->capacity_columns, sizeof(double));
-
-    //for (int i = 0; i < matrix->columns; ++i) {
-    //  matrix->data[i] = (double*) calloc((size_t)matrix->capacity_cells, sizeof(double));
-    //}
-    //ALQUIMIA_ASSERT(NULL != matrix->data);
+    matrix->data = (double*) calloc((size_t)matrix->capacity_cells * matrix->capacity_columns,
+                                    sizeof(double));
   } else {
-    matrix->cells= 0;
-    matrix->columns= 0;
-    matrix->capacity_cells= 0;
-    matrix->capacity_columns= 0;
+    matrix->cells = 0;
+    matrix->columns = 0;
+    matrix->capacity_cells = 0;
+    matrix->capacity_columns = 0;
     matrix->data = NULL;
   }
-}  /* end AllocateBGCmatrixDouble() */
+}
 
-void FreeBGCMatrixDouble(BGCMatrixDouble* matrix) {
+void FreeEcoMatrixDouble(EcoMatrixDouble* matrix) {
   if (matrix != NULL) {
     free(matrix->data);
     matrix->data = NULL;
-    matrix->cells= 0;
-    matrix->columns= 0;
-    matrix->capacity_cells= 0;
-    matrix->capacity_columns= 0;
+    matrix->cells = 0;
+    matrix->columns = 0;
+    matrix->capacity_cells = 0;
+    matrix->capacity_columns = 0;
   }
-}  /* end FreeBGCmatrixDouble() */
+}
 
-void AllocateBGCMatrixInt(const int cells, const int columns, BGCMatrixInt* matrix) {
-  if ((cells> 0) || (columns> 0)) {
-    matrix->cells= cells;
-    matrix->columns= columns;
-    matrix->capacity_cells= nearest_power_of_2(cells);
-    matrix->capacity_columns= nearest_power_of_2(columns);
-    matrix->data = (int*) calloc((size_t)matrix->capacity_cells * matrix->capacity_columns, sizeof(int));
-    //for (int i = 0; i < matrix->columns; ++i) {
-    //  matrix->data[i] = (int*) calloc((size_t)matrix->capacity_cells, sizeof(int));
-    //}
-    //ALQUIMIA_ASSERT(NULL != matrix->data);
+void AllocateEcoMatrixInt(const int cells, const int columns, EcoMatrixInt* matrix) {
+  if ((cells > 0) || (columns > 0)) {
+    matrix->cells = cells;
+    matrix->columns = columns;
+    matrix->capacity_cells = nearest_power_of_2(cells);
+    matrix->capacity_columns = nearest_power_of_2(columns);
+    matrix->data = (int*) calloc((size_t)matrix->capacity_cells * matrix->capacity_columns,
+                                 sizeof(int));
   } else {
-    matrix->cells= 0;
-    matrix->columns= 0;
-    matrix->capacity_cells= 0;
-    matrix->capacity_columns= 0;
+    matrix->cells = 0;
+    matrix->columns = 0;
+    matrix->capacity_cells = 0;
+    matrix->capacity_columns = 0;
     matrix->data = NULL;
   }
-}  /* end AllocateBGCMatrixInt() */
+}
 
-void FreeBGCMatrixInt(BGCMatrixInt* matrix) {
+void FreeEcoMatrixInt(EcoMatrixInt* matrix) {
   if (matrix != NULL) {
     free(matrix->data);
     matrix->data = NULL;
-    matrix->cells= 0;
-    matrix->columns= 0;
-    matrix->capacity_columns= 0;
-    matrix->capacity_cells= 0;
+    matrix->cells = 0;
+    matrix->columns = 0;
+    matrix->capacity_cells = 0;
+    matrix->capacity_columns = 0;
   }
-}  /* end FreeBGCMatrixInt() */
+}
 
 /*******************************************************************************
  **
- **  BGC Tensor
+ **  Tensors
  **
  *******************************************************************************/
-
-void AllocateBGCTensorDouble(const int cells, const int columns, const int components, BGCTensorDouble* tensor) {
-  if ((cells> 0 ) || (columns> 0) || (components > 0)){
+void AllocateEcoTensorDouble(const int cells, const int columns, const int components,
+                             EcoTensorDouble* tensor) {
+  if ((cells > 0) || (columns > 0) || (components > 0)) {
     tensor->cells = cells;
     tensor->columns = columns;
     tensor->components = components;
-
-    tensor->capacity_cells= nearest_power_of_2(cells);
-    tensor->capacity_columns= nearest_power_of_2(columns);
+    tensor->capacity_cells = nearest_power_of_2(cells);
+    tensor->capacity_columns = nearest_power_of_2(columns);
     tensor->capacity_components = nearest_power_of_2(components);
-
-    tensor->data = (double*) calloc(
-      (size_t)tensor->capacity_columns *
-               tensor->capacity_cells *
-               tensor->capacity_components,
-      sizeof(double));
-    
-    /*old unflattened data */
-    /*tensor->data = (double***) calloc((size_t)tensor->capacity_columns, sizeof(double**));
-    for (int i = 0; i < tensor->columns; ++i) {
-      tensor->data[i] = (double**) calloc((size_t)tensor->capacity_cells, sizeof(double*));
-      for (int j = 0; j < tensor->cells; ++j) {
-        tensor->data[i][j] = (double*) calloc((size_t)tensor->capacity_components, sizeof(double));
-      }
-    }*/
-    //ALQUIMIA_ASSERT(NULL != matrix->data);
+    tensor->data = (double*) calloc((size_t)tensor->capacity_columns * tensor->capacity_cells *
+                                      tensor->capacity_components,
+                                    sizeof(double));
   } else {
-    tensor->cells= 0;
-    tensor->columns= 0;
-    tensor->components = 0;
-    tensor->capacity_cells = 0;
-    tensor->capacity_columns = 0;
-    tensor->capacity_components = 0;
-    tensor->data = NULL;
-  }
-}  /* end AllocateBGCmatrixDouble() */
-
-void FreeBGCTensorDouble(BGCTensorDouble* tensor) {
-  if (tensor != NULL) {
-    free(tensor->data);
-    tensor->data = NULL;
-    tensor->cells= 0;
+    tensor->cells = 0;
     tensor->columns = 0;
+    tensor->components = 0;
+    tensor->capacity_cells = 0;
+    tensor->capacity_columns = 0;
+    tensor->capacity_components = 0;
+    tensor->data = NULL;
+  }
+}
+
+void FreeEcoTensorDouble(EcoTensorDouble* tensor) {
+  if (tensor != NULL) {
+    free(tensor->data);
+    tensor->data = NULL;
+    tensor->cells = 0;
+    tensor->columns = 0;
+    tensor->components = 0;
     tensor->capacity_cells = 0;
     tensor->capacity_columns = 0;
     tensor->capacity_components = 0;
   }
-}  /* end FreeBGCmatrixDouble() */
+}
 
-void AllocateBGCTensorInt(const int cells, const int columns, const int components, BGCTensorInt* tensor) {
-  if ((cells> 0 ) || (columns> 0) || (components > 0)){
-    tensor->cells= cells;
-    tensor->columns= columns;
+void AllocateEcoTensorInt(const int cells, const int columns, const int components,
+                          EcoTensorInt* tensor) {
+  if ((cells > 0) || (columns > 0) || (components > 0)) {
+    tensor->cells = cells;
+    tensor->columns = columns;
     tensor->components = components;
-
-    tensor->capacity_cells= nearest_power_of_2(cells);
-    tensor->capacity_columns= nearest_power_of_2(columns);
+    tensor->capacity_cells = nearest_power_of_2(cells);
+    tensor->capacity_columns = nearest_power_of_2(columns);
     tensor->capacity_components = nearest_power_of_2(components);
-
-    tensor->data = (int*) calloc(
-      (size_t)tensor->capacity_columns *
-               tensor->capacity_cells *
-               tensor->capacity_components,
-      sizeof(int));
-    } else {
-    tensor->cells= 0;
-    tensor->columns= 0;
+    tensor->data = (int*) calloc((size_t)tensor->capacity_columns * tensor->capacity_cells *
+                                   tensor->capacity_components,
+                                 sizeof(int));
+  } else {
+    tensor->cells = 0;
+    tensor->columns = 0;
     tensor->components = 0;
-    tensor->capacity_cells= 0;
-    tensor->capacity_columns= 0;
+    tensor->capacity_cells = 0;
+    tensor->capacity_columns = 0;
     tensor->capacity_components = 0;
     tensor->data = NULL;
   }
-}  /* end AllocateBGCmatrixint() */
+}
 
-void FreeBGCTensorInt(BGCTensorInt* tensor) {
+void FreeEcoTensorInt(EcoTensorInt* tensor) {
   if (tensor != NULL) {
     free(tensor->data);
     tensor->data = NULL;
-    tensor->cells= 0;
-    tensor->columns= 0;
-    tensor->capacity_cells= 0;
-    tensor->capacity_columns= 0;
+    tensor->cells = 0;
+    tensor->columns = 0;
+    tensor->components = 0;
+    tensor->capacity_cells = 0;
+    tensor->capacity_columns = 0;
     tensor->capacity_components = 0;
   }
-}  /* end FreeBGCmatrixint() */
+}
 
 /*******************************************************************************
  **
- **  State
+ **  Environment (ATS -> EcoSIM)
  **
  *******************************************************************************/
-/*Note that sizes for all the datasets that are single vectors should just be
-the size of the column, need to test
-For reference the old function call was:
-void AllocateBGCState(const BGCSizes* const sizes,
-                           BGCState* state)*/
-
- void AllocateBGCState(BGCSizes* sizes, BGCState* state,
-                       int ncells_per_col_, int num_components, int num_columns, int num_pfts) {
-   sizes->ncells_per_col_ = ncells_per_col_;
-   sizes->num_components = num_components;
-   sizes->num_columns = num_columns;
-   sizes->num_pfts = num_pfts;
-
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->liquid_density));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->gas_density));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->ice_density));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->rock_density));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->porosity));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->water_content));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->matric_pressure));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->temperature));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->hydraulic_conductivity));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->bulk_density));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->subsurface_energy_source));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(state->subsurface_water_source));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->surface_water_source));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->surface_energy_source));
-   AllocateBGCVectorDouble(sizes->num_columns, &(state->snow_depth));
-   AllocateBGCTensorDouble(sizes->ncells_per_col_, sizes->num_columns, sizes->num_components, &(state->mole_fraction));
-   //ALQUIMIA_ASSERT(state->total_mobile.data != NULL);
- }  /* end AllocateBGCState() */
-
- void FreeBGCState(BGCState* state) {
-   if (state != NULL) {
-     FreeBGCMatrixDouble(&(state->liquid_density));
-     FreeBGCMatrixDouble(&(state->gas_density));
-     FreeBGCMatrixDouble(&(state->ice_density));
-     FreeBGCMatrixDouble(&(state->rock_density));
-     FreeBGCMatrixDouble(&(state->porosity));
-     FreeBGCMatrixDouble(&(state->water_content));
-     FreeBGCMatrixDouble(&(state->matric_pressure));
-     FreeBGCMatrixDouble(&(state->temperature));
-     FreeBGCMatrixDouble(&(state->hydraulic_conductivity));
-     FreeBGCMatrixDouble(&(state->bulk_density));
-     FreeBGCMatrixDouble(&(state->subsurface_energy_source));
-     FreeBGCMatrixDouble(&(state->subsurface_water_source));
-     FreeBGCVectorDouble(&(state->surface_energy_source));
-     FreeBGCVectorDouble(&(state->surface_water_source));
-     FreeBGCVectorDouble(&(state->snow_depth));
-     FreeBGCTensorDouble(&(state->mole_fraction));
-   }
- }  /* end FreeAlquimiaState() */
-
- /*******************************************************************************
-  **
-  **  EcoSIM internal state
-  **
-  *******************************************************************************/
- void AllocateBGCInternalState(BGCInternalState* internal_state, int layout_version,
-                               int num_entries, int num_columns, int values_per_column) {
-   internal_state->layout_version = layout_version;
-   internal_state->num_entries = num_entries;
-   internal_state->num_columns = num_columns;
-   internal_state->values_per_column = values_per_column;
-   AllocateBGCMatrixDouble(values_per_column, num_columns, &(internal_state->values));
- }  /* end AllocateBGCInternalState() */
-
- void FreeBGCInternalState(BGCInternalState* internal_state) {
-   if (internal_state != NULL) {
-     FreeBGCMatrixDouble(&(internal_state->values));
-   }
- }  /* end FreeBGCInternalState() */
-
- /*******************************************************************************
-  **
-  **  Auxiliary Data
-  **
-  *******************************************************************************/
- /*
- void AllocateBGCAuxiliaryData(const BGCSizes* const sizes, BGCAuxiliaryData* aux_data,
-                               int ncells_per_col_) {
-   AllocateBGCMatrixInt(sizes->ncells_per_col_,
-                             &(aux_data->aux_ints));
-
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_,
-                                &(aux_data->aux_doubles));
-
- }  // end AllocateAlquimiaAuxiliaryData()
-
- void FreeBGCAuxiliaryData(BGCAuxiliaryData* aux_data) {
-   if (aux_data != NULL) {
-     FreeBGCMatrixInt(&(aux_data->aux_ints));
-     FreeBGCMatrixDouble(&(aux_data->aux_doubles));
-   }
- }  // end FreeAlquimiaAuxiliaryData()
- */
-
- /*******************************************************************************
-  **
-  **  Properties
-  **
-  *******************************************************************************/
-
- void AllocateBGCProperties(BGCSizes* sizes, BGCProperties* properties,
-                           int ncells_per_col_, int num_columns, int num_pfts) {
-
-   sizes->ncells_per_col_ = ncells_per_col_;
-   sizes->num_columns = num_columns;
-   sizes->num_pfts = num_pfts;
-   
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->liquid_saturation));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->gas_saturation));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->ice_saturation));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->relative_permeability));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->thermal_conductivity));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->volume));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->depth));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->dz));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->plant_wilting_factor));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->rooting_depth_fraction));
-   AllocateBGCMatrixDouble(sizes->ncells_per_col_, sizes->num_columns, &(properties->plant_functional_type));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->column_area));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->shortwave_radiation));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->longwave_radiation));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->air_temperature));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->vapor_pressure_air));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->wind_speed));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->precipitation));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->precipitation_snow));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->elevation));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->aspect));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->slope));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->LAI));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->SAI));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->vegetation_type));
-   AllocateBGCVectorDouble(sizes->num_columns, &(properties->snow_albedo));
- }  /* end AllocateAlquimiaProperties() */
-
- void FreeBGCProperties(BGCProperties* properties) {
-   if (properties != NULL) {
-     FreeBGCMatrixDouble(&(properties->liquid_saturation));
-     FreeBGCMatrixDouble(&(properties->gas_saturation));
-     FreeBGCMatrixDouble(&(properties->ice_saturation));
-     FreeBGCMatrixDouble(&(properties->relative_permeability));
-     FreeBGCMatrixDouble(&(properties->thermal_conductivity));
-     FreeBGCMatrixDouble(&(properties->volume));
-     FreeBGCMatrixDouble(&(properties->depth));
-     FreeBGCMatrixDouble(&(properties->dz));
-     FreeBGCMatrixDouble(&(properties->plant_wilting_factor));
-     FreeBGCMatrixDouble(&(properties->rooting_depth_fraction));
-     FreeBGCMatrixDouble(&(properties->plant_functional_type));
-
-     FreeBGCVectorDouble(&(properties->column_area));
-     FreeBGCVectorDouble(&(properties->shortwave_radiation));
-     FreeBGCVectorDouble(&(properties->longwave_radiation));
-     FreeBGCVectorDouble(&(properties->air_temperature));
-     FreeBGCVectorDouble(&(properties->vapor_pressure_air));
-     FreeBGCVectorDouble(&(properties->wind_speed));
-     FreeBGCVectorDouble(&(properties->precipitation));
-     FreeBGCVectorDouble(&(properties->precipitation_snow));
-     FreeBGCVectorDouble(&(properties->elevation));
-     FreeBGCVectorDouble(&(properties->aspect));
-     FreeBGCVectorDouble(&(properties->slope));
-     FreeBGCVectorDouble(&(properties->LAI));
-     FreeBGCVectorDouble(&(properties->SAI));
-     FreeBGCVectorDouble(&(properties->vegetation_type));
-     FreeBGCVectorDouble(&(properties->snow_albedo));
-   }
- }
-
-/* OLD VERSION OF THE DATA MODULES
-void AllocateBGCState(BGCSizes* sizes, BGCState* state,
-                      int ncells_per_col_, int num_components) {
-  sizes->ncells_per_col_ = ncells_per_col_;
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->liquid_density));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->gas_density));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->ice_density));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->porosity));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->water_content));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->suction_head));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->temperature));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->hydraulic_conductivity));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(state->bulk_density));
-  AllocateBGCMatrixDouble(sizes->ncells_per_col_,sizes->num_components, &(state->total_component_concentration));
-  //ALQUIMIA_ASSERT(state->total_mobile.data != NULL);
-
+void AllocateEcoEnvironment(EcoEnvironment* env, int ncells_per_col_, int num_components,
+                            int num_columns) {
+  const int nc = ncells_per_col_, ncol = num_columns;
+  AllocateEcoMatrixDouble(nc, ncol, &(env->liquid_density));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->gas_density));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->ice_density));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->rock_density));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->porosity));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->water_content));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->matric_pressure));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->temperature));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->hydraulic_conductivity));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->bulk_density));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->liquid_saturation));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->gas_saturation));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->ice_saturation));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->relative_permeability));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->thermal_conductivity));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->volume));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->depth));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->dz));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->plant_wilting_factor));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->rooting_depth_fraction));
+  AllocateEcoMatrixDouble(nc, ncol, &(env->plant_functional_type));
+  AllocateEcoTensorDouble(nc, ncol, num_components, &(env->mole_fraction));
+  AllocateEcoVectorDouble(ncol, &(env->column_area));
+  AllocateEcoVectorDouble(ncol, &(env->shortwave_radiation));
+  AllocateEcoVectorDouble(ncol, &(env->longwave_radiation));
+  AllocateEcoVectorDouble(ncol, &(env->air_temperature));
+  AllocateEcoVectorDouble(ncol, &(env->vapor_pressure_air));
+  AllocateEcoVectorDouble(ncol, &(env->wind_speed));
+  AllocateEcoVectorDouble(ncol, &(env->precipitation));
+  AllocateEcoVectorDouble(ncol, &(env->precipitation_snow));
+  AllocateEcoVectorDouble(ncol, &(env->elevation));
+  AllocateEcoVectorDouble(ncol, &(env->aspect));
+  AllocateEcoVectorDouble(ncol, &(env->slope));
+  AllocateEcoVectorDouble(ncol, &(env->LAI));
+  AllocateEcoVectorDouble(ncol, &(env->SAI));
+  AllocateEcoVectorDouble(ncol, &(env->vegetation_type));
+  AllocateEcoVectorDouble(ncol, &(env->snow_albedo));
 }
 
-void FreeBGCState(BGCState* state) {
-  if (state != NULL) {
-    FreeBGCVectorDouble(&(state->liquid_density));
-    FreeBGCVectorDouble(&(state->gas_density));
-    FreeBGCVectorDouble(&(state->ice_density));
-    FreeBGCVectorDouble(&(state->porosity));
-    FreeBGCVectorDouble(&(state->water_content));
-    FreeBGCVectorDouble(&(state->suction_head));
-    FreeBGCVectorDouble(&(state->temperature));
-    FreeBGCVectorDouble(&(state->hydraulic_conductivity));
-    FreeBGCVectorDouble(&(state->bulk_density));
-    FreeBGCMatrixDouble(&(state->total_component_concentration));
-  }
-}
-
-void AllocateBGCAuxiliaryData(const BGCSizes* const sizes, BGCAuxiliaryData* aux_data,
-                              int ncells_per_col_) {
-  AllocateBGCVectorInt(sizes->ncells_per_col_,
-                            &(aux_data->aux_ints));
-
-  AllocateBGCVectorDouble(sizes->ncells_per_col_,
-                               &(aux_data->aux_doubles));
-
-}
-
-void FreeBGCAuxiliaryData(BGCAuxiliaryData* aux_data) {
-  if (aux_data != NULL) {
-    FreeBGCVectorInt(&(aux_data->aux_ints));
-    FreeBGCVectorDouble(&(aux_data->aux_doubles));
-  }
-}
-
-void AllocateBGCProperties(BGCSizes* sizes, BGCProperties* properties,
-                          int ncells_per_col_) {
-  sizes->ncells_per_col_ = ncells_per_col_;
-
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->liquid_saturation));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->gas_saturation));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->ice_saturation));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->relative_permeability));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->thermal_conductivity));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->volume));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->depth));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->dz));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->plant_wilting_factor));
-  AllocateBGCVectorDouble(sizes->ncells_per_col_, &(properties->rooting_depth_fraction));
-}
-
-void FreeBGCProperties(BGCProperties* properties) {
-  if (properties != NULL) {
-    FreeBGCVectorDouble(&(properties->liquid_saturation));
-    FreeBGCVectorDouble(&(properties->gas_saturation));
-    FreeBGCVectorDouble(&(properties->ice_saturation));
-    FreeBGCVectorDouble(&(properties->relative_permeability));
-    FreeBGCVectorDouble(&(properties->thermal_conductivity));
-    FreeBGCVectorDouble(&(properties->volume));
-    FreeBGCVectorDouble(&(properties->depth));
-    FreeBGCVectorDouble(&(properties->dz));
-    FreeBGCVectorDouble(&(properties->plant_wilting_factor));
-    FreeBGCVectorDouble(&(properties->rooting_depth_fraction));
+void FreeEcoEnvironment(EcoEnvironment* env) {
+  if (env != NULL) {
+    FreeEcoMatrixDouble(&(env->liquid_density));
+    FreeEcoMatrixDouble(&(env->gas_density));
+    FreeEcoMatrixDouble(&(env->ice_density));
+    FreeEcoMatrixDouble(&(env->rock_density));
+    FreeEcoMatrixDouble(&(env->porosity));
+    FreeEcoMatrixDouble(&(env->water_content));
+    FreeEcoMatrixDouble(&(env->matric_pressure));
+    FreeEcoMatrixDouble(&(env->temperature));
+    FreeEcoMatrixDouble(&(env->hydraulic_conductivity));
+    FreeEcoMatrixDouble(&(env->bulk_density));
+    FreeEcoMatrixDouble(&(env->liquid_saturation));
+    FreeEcoMatrixDouble(&(env->gas_saturation));
+    FreeEcoMatrixDouble(&(env->ice_saturation));
+    FreeEcoMatrixDouble(&(env->relative_permeability));
+    FreeEcoMatrixDouble(&(env->thermal_conductivity));
+    FreeEcoMatrixDouble(&(env->volume));
+    FreeEcoMatrixDouble(&(env->depth));
+    FreeEcoMatrixDouble(&(env->dz));
+    FreeEcoMatrixDouble(&(env->plant_wilting_factor));
+    FreeEcoMatrixDouble(&(env->rooting_depth_fraction));
+    FreeEcoMatrixDouble(&(env->plant_functional_type));
+    FreeEcoTensorDouble(&(env->mole_fraction));
+    FreeEcoVectorDouble(&(env->column_area));
+    FreeEcoVectorDouble(&(env->shortwave_radiation));
+    FreeEcoVectorDouble(&(env->longwave_radiation));
+    FreeEcoVectorDouble(&(env->air_temperature));
+    FreeEcoVectorDouble(&(env->vapor_pressure_air));
+    FreeEcoVectorDouble(&(env->wind_speed));
+    FreeEcoVectorDouble(&(env->precipitation));
+    FreeEcoVectorDouble(&(env->precipitation_snow));
+    FreeEcoVectorDouble(&(env->elevation));
+    FreeEcoVectorDouble(&(env->aspect));
+    FreeEcoVectorDouble(&(env->slope));
+    FreeEcoVectorDouble(&(env->LAI));
+    FreeEcoVectorDouble(&(env->SAI));
+    FreeEcoVectorDouble(&(env->vegetation_type));
+    FreeEcoVectorDouble(&(env->snow_albedo));
   }
 }
 
 /*******************************************************************************
  **
- **  Problem Meta Data
+ **  Feedback (EcoSIM -> ATS)
  **
  *******************************************************************************/
-/*
-void AllocateAlquimiaProblemMetaData(const AlquimiaSizes* const sizes,
-                                     AlquimiaProblemMetaData* meta_data) {
-
-  AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
-  ALQUIMIA_ASSERT(meta_data->primary_names.data != NULL);
-
-  AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->positivity));
-  memset(meta_data->positivity.data, 0, sizeof(int) * sizes->num_primary);
-
-  AllocateAlquimiaVectorString(sizes->num_minerals,
-                               &(meta_data->mineral_names));
-
-  AllocateAlquimiaVectorString(sizes->num_surface_sites,
-                               &(meta_data->surface_site_names));
-
-  AllocateAlquimiaVectorString(sizes->num_ion_exchange_sites,
-                               &(meta_data->ion_exchange_names));
-
-  AllocateAlquimiaVectorString(sizes->num_isotherm_species,
-                               &(meta_data->isotherm_species_names));
-
-  AllocateAlquimiaVectorString(sizes->num_aqueous_kinetics,
-                               &(meta_data->aqueous_kinetic_names));
-
-}  //end AllocateAlquimiaProblemMetaData()
-
-void FreeAlquimiaProblemMetaData(AlquimiaProblemMetaData* meta_data) {
-
-  if (meta_data != NULL) {
-    FreeAlquimiaVectorString(&(meta_data->primary_names));
-    FreeAlquimiaVectorInt(&(meta_data->positivity));
-    FreeAlquimiaVectorString(&(meta_data->mineral_names));
-    FreeAlquimiaVectorString(&(meta_data->surface_site_names));
-    FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
-    FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
-    FreeAlquimiaVectorString(&(meta_data->aqueous_kinetic_names));
-  }
-}  end FreeAlquimiaProblemMetaData() */
-
-/*******************************************************************************
- **
- **  Auxiliary Output Data
- **
- *******************************************************************************/
-/*
-void AllocateAlquimiaAuxiliaryOutputData(const AlquimiaSizes* const sizes,
-                                         AlquimiaAuxiliaryOutputData* aux_output) {
-  aux_output->pH = -999.9;
-  AllocateAlquimiaVectorDouble(sizes->num_minerals,
-                               &(aux_output->mineral_saturation_index));
-
-  AllocateAlquimiaVectorDouble(sizes->num_aqueous_kinetics,
-                               &(aux_output->aqueous_kinetic_rate));
-
-  AllocateAlquimiaVectorDouble(sizes->num_minerals,
-                               &(aux_output->mineral_reaction_rate));
-
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
-                               &(aux_output->primary_free_ion_concentration));
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
-                               &(aux_output->primary_activity_coeff));
-
-  AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
-                               &(aux_output->secondary_free_ion_concentration));
-  AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
-                               &(aux_output->secondary_activity_coeff));
-
-}  // end AllocateAlquimiaAuxiliaryOutputData()
-
-void FreeAlquimiaAuxiliaryOutputData(AlquimiaAuxiliaryOutputData* aux_output) {
-  if (aux_output != NULL) {
-    FreeAlquimiaVectorDouble(&(aux_output->aqueous_kinetic_rate));
-    FreeAlquimiaVectorDouble(&(aux_output->mineral_saturation_index));
-    FreeAlquimiaVectorDouble(&(aux_output->mineral_reaction_rate));
-    FreeAlquimiaVectorDouble(&(aux_output->primary_free_ion_concentration));
-    FreeAlquimiaVectorDouble(&(aux_output->primary_activity_coeff));
-    FreeAlquimiaVectorDouble(&(aux_output->secondary_free_ion_concentration));
-    FreeAlquimiaVectorDouble(&(aux_output->secondary_activity_coeff));
-  }
-}   end FreeAlquimiaAuxiliaryOutputData() */
-
-/*******************************************************************************
- **
- **  Engine Status
- **
- *******************************************************************************/
-/*
-void AllocateAlquimiaEngineStatus(AlquimiaEngineStatus* status) {
-
-  status->message = (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
-  if (NULL == status->message) {
-    // TODO(bja): error handling
-  }
-}  // end AllocateAlquimiaEngineStatus()
-
-void FreeAlquimiaEngineStatus(AlquimiaEngineStatus* status) {
-  if (status != NULL) {
-    free(status->message);
-  }
-  status->message = NULL;
-
-}  end FreeAlquimiaEngineStatus() */
-
-
-
-/*******************************************************************************
- **
- **  Geochemical conditions/constraints
- **
- *******************************************************************************/
-/*
-void AllocateAlquimiaGeochemicalConditionVector(const int num_conditions,
-                                                AlquimiaGeochemicalConditionVector* condition_list) {
-  // NOTE: we are only allocating pointers to N conditions here, not
-     the actual conditions themselves.
-  fprintf(stdout, " AllocateAlquimiaGeochemicalConditionList() : %d\n",
-          num_conditions);
-  condition_list->size = num_conditions;
-  condition_list->capacity = nearest_power_of_2(num_conditions);
-
-  if (condition_list->size > 0) {
-    condition_list->data = (AlquimiaGeochemicalCondition*)
-        calloc((size_t)condition_list->capacity,
-               sizeof(AlquimiaGeochemicalCondition));
-  }
-}  // end AllocateAlquimiaGeochemicalConditionVector()
-
-void AllocateAlquimiaGeochemicalCondition(const int size_name,
-                                          const int num_aqueous_constraints,
-                                          const int num_mineral_constraints,
-    AlquimiaGeochemicalCondition* condition) {
-  // NOTE: we are only allocating pointers to N constraints here, not
-     the actual condstraints themselves.
-  if (condition != NULL) {
-    // size_name + 1 to include the null character!
-    condition->name = (char*) calloc((size_t)size_name+1, sizeof(char));
-    AllocateAlquimiaAqueousConstraintVector(num_aqueous_constraints, &condition->aqueous_constraints);
-    AllocateAlquimiaMineralConstraintVector(num_mineral_constraints, &condition->mineral_constraints);
-  }
-}  // end AllocateAlquimiaGeochemicalCondition()
-
-void AllocateAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint) {
-  constraint->primary_species_name =
-      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
-  constraint->constraint_type =
-      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
-  constraint->associated_species =
-      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
-  constraint->value = 0.0;
-}  // end AllocateAlquimiaAqueousConstraint()
-
-void AllocateAlquimiaAqueousConstraintVector(int num_constraints,
-                                             AlquimiaAqueousConstraintVector* constraint_list) {
-  constraint_list->size = num_constraints;
-  constraint_list->capacity = nearest_power_of_2(num_constraints);
-  if (constraint_list->size > 0) {
-    constraint_list->data = (AlquimiaAqueousConstraint*)
-      calloc((size_t)constraint_list->capacity,
-             sizeof(AlquimiaAqueousConstraint));
-  }
-  else
-    constraint_list->data = NULL;
+void AllocateEcoFeedback(EcoFeedback* feedback, int ncells_per_col_, int num_columns) {
+  AllocateEcoMatrixDouble(ncells_per_col_, num_columns, &(feedback->subsurface_water_source));
+  AllocateEcoMatrixDouble(ncells_per_col_, num_columns, &(feedback->subsurface_energy_source));
+  AllocateEcoVectorDouble(num_columns, &(feedback->surface_water_source));
+  AllocateEcoVectorDouble(num_columns, &(feedback->surface_energy_source));
+  AllocateEcoVectorDouble(num_columns, &(feedback->snow_depth));
 }
 
-void AllocateAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint) {
-  constraint->mineral_name =
-      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
-  constraint->volume_fraction = -1.0;
-  constraint->specific_surface_area = -1.0;
-}  // end AllocateAlquimiaMineralConstraint()
-
-void AllocateAlquimiaMineralConstraintVector(int num_constraints,
-                                             AlquimiaMineralConstraintVector* constraint_list) {
-  constraint_list->size = num_constraints;
-  constraint_list->capacity = nearest_power_of_2(num_constraints);
-  if (constraint_list->size > 0) {
-    constraint_list->data = (AlquimiaMineralConstraint*)
-      calloc((size_t)constraint_list->capacity,
-             sizeof(AlquimiaMineralConstraint));
+void FreeEcoFeedback(EcoFeedback* feedback) {
+  if (feedback != NULL) {
+    FreeEcoMatrixDouble(&(feedback->subsurface_water_source));
+    FreeEcoMatrixDouble(&(feedback->subsurface_energy_source));
+    FreeEcoVectorDouble(&(feedback->surface_water_source));
+    FreeEcoVectorDouble(&(feedback->surface_energy_source));
+    FreeEcoVectorDouble(&(feedback->snow_depth));
   }
-  else
-    constraint_list->data = NULL;
 }
-
-void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* condition_list) {
-  int i;
-  if (condition_list != NULL) {
-    for (i = 0; i < condition_list->size; ++i) {
-      FreeAlquimiaGeochemicalCondition(&(condition_list->data[i]));
-    }
-    if (condition_list->data != NULL) {
-      free(condition_list->data);
-      condition_list->data = NULL;
-    }
-    condition_list->size = 0;
-    condition_list->capacity = 0;
-  }
-}  // end FreeAlquimiaGeochemicalConditionList()
-
-void FreeAlquimiaGeochemicalCondition(AlquimiaGeochemicalCondition* condition) {
-  if (condition != NULL) {
-    if (condition->name != NULL) {
-      free(condition->name);
-      condition->name = NULL;
-    }
-    FreeAlquimiaAqueousConstraintVector(&(condition->aqueous_constraints));
-    FreeAlquimiaMineralConstraintVector(&(condition->mineral_constraints));
-  }
-}  // end FreeAlquimiaGeochemicalCondition()
-
-void FreeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vector) {
-  int i;
-  if (vector != NULL) {
-    for (i = 0; i < vector->size; ++i) {
-      FreeAlquimiaAqueousConstraint(&vector->data[i]);
-    }
-    if (vector->data != NULL) {
-      free(vector->data);
-      vector->data = NULL;
-    }
-    vector->size = 0;
-    vector->capacity = 0;
-  }
-}  // end FreeAlquimiaAqueousConstraintVector()
-
-void FreeAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint) {
-  free(constraint->primary_species_name);
-  constraint->primary_species_name = NULL;
-  free(constraint->constraint_type);
-  constraint->constraint_type = NULL;
-  free(constraint->associated_species);
-  constraint->associated_species = NULL;
-}  // end FreeAlquimiaAqueousConstraint()
-
-void FreeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vector) {
-  int i;
-  if (vector != NULL) {
-    for (i = 0; i < vector->size; ++i) {
-      FreeAlquimiaMineralConstraint(&vector->data[i]);
-    }
-    free(vector->data);
-    vector->data = NULL;
-    vector->size = 0;
-    vector->capacity = 0;
-  }
-}  // end FreeAlquimiaMineralConstraintVector()
-
-void FreeAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint) {
-  free(constraint->mineral_name);
-  constraint->mineral_name = NULL;
-}  // end FreeAlquimiaMineralConstraint() */
-
 
 /*******************************************************************************
  **
- **  Data convenience struct
+ **  EcoSIM internal state
  **
  *******************************************************************************/
-/*
-void AllocateAlquimiaData(AlquimiaData* data) {
-    AllocateAlquimiaState(&data->sizes, &data->state);
-    AllocateAlquimiaProperties(&data->sizes, &data->properties);
-    AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
-    AllocateAlquimiaProblemMetaData(&data->sizes, &data->meta_data);
-    AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
-}  // end AllocateAlquimiaData()
+void AllocateEcoInternalState(EcoInternalState* internal_state, int layout_version,
+                              int num_entries, int num_columns, int values_per_column) {
+  internal_state->layout_version = layout_version;
+  internal_state->num_entries = num_entries;
+  internal_state->num_columns = num_columns;
+  internal_state->values_per_column = values_per_column;
+  AllocateEcoMatrixDouble(values_per_column, num_columns, &(internal_state->values));
+}
 
-
-void FreeAlquimiaData(AlquimiaData* data) {
-  FreeAlquimiaState(&data->state);
-  FreeAlquimiaProperties(&data->properties);
-  FreeAlquimiaAuxiliaryData(&data->aux_data);
-  FreeAlquimiaProblemMetaData(&data->meta_data);
-  FreeAlquimiaAuxiliaryOutputData(&data->aux_output);
-}  // end FreeAlquimiaData() */
+void FreeEcoInternalState(EcoInternalState* internal_state) {
+  if (internal_state != NULL) {
+    FreeEcoMatrixDouble(&(internal_state->values));
+  }
+}

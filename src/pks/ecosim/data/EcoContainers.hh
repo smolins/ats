@@ -27,15 +27,32 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
-#ifndef BGC_CONTAINERS_H_
-#define BGC_CONTAINERS_H_
+#ifndef ECO_CONTAINERS_H_
+#define ECO_CONTAINERS_H_
 
 /*******************************************************************************
  **
- ** C implementation of the alquimia containers.
+ ** Containers exchanged between ATS and EcoSIM (adapted from Alquimia).
  **
- ** These are passed directly into the fortran routines. The
- ** signatures must match exactly with the fortran side of things.
+ ** These are passed directly to the Fortran routines, which mirror them as
+ ** bind(C) types in EcoSIM's EcoContainers.F90 (EcoContainers_module). Member
+ ** order and types must match exactly; ecosim_container_sizes() lets ATS
+ ** check the sizes at setup.
+ **
+ ** Roles, by direction and lifetime:
+ **   EcoSizes          dimensions
+ **   EcoConfig         ATS -> EcoSIM, once at setup: run parameters and flags
+ **   EcoEnvironment    ATS -> EcoSIM, at setup and every advance: soil state
+ **                     and properties, geometry, forcing, prescribed
+ **                     vegetation, clock. Owned by ATS; never read back.
+ **   EcoFeedback       EcoSIM -> ATS, every advance: what ATS physics uses
+ **                     from EcoSIM. snow_depth is also sent in (EcoSIM's snow
+ **                     state); the incoming sources are not used by EcoSIM.
+ **   EcoInternalState  EcoSIM-private carried state and outputs, stored by
+ **                     ATS without interpreting it (ATSStateRegistryMod).
+ **
+ ** Members marked "not filled" or "placeholder" are carried over unchanged
+ ** from the earlier BGCState/BGCProperties and are to be fixed separately.
  **
  ******************************************************************************/
 
@@ -46,125 +63,99 @@
 extern "C" {
 #endif /* __cplusplus */
 
-//Defining String Lengths
-extern const int kBGCMaxStringLength;
-extern const int kBGCMaxWordLength;
-
   typedef struct {
     int size, capacity;
     double* data;
-  } BGCVectorDouble;
+  } EcoVectorDouble;
 
   typedef struct {
     int size, capacity;
     int* data;
-  } BGCVectorInt;
+  } EcoVectorInt;
 
-  typedef struct {
-    /* NOTE: this is a vector of strings */
-    int size, capacity;
-    char** data;
-  } BGCVectorString;
-
+  /* cells x columns, column-major: data[column*cells + cell] */
   typedef struct {
     int cells, columns, capacity_cells, capacity_columns;
     double* data;
-  } BGCMatrixDouble;
+  } EcoMatrixDouble;
 
   typedef struct {
     int cells, columns, capacity_cells, capacity_columns;
     int* data;
-  } BGCMatrixInt;
+  } EcoMatrixInt;
 
-  typedef struct {
-    int cells, columns, capacity;
-    char* data;
-  } BGCMatrixString;
-
+  /* cells x columns x components */
   typedef struct {
     int cells, columns, components, capacity_cells, capacity_columns, capacity_components;
     double* data;
-  } BGCTensorDouble;
+  } EcoTensorDouble;
 
   typedef struct {
     int cells, columns, components, capacity_cells, capacity_columns, capacity_components;
     int* data;
-  } BGCTensorInt;
-
-  typedef struct {
-    int cells, columns, components, capacity;
-    char*** data;
-  } BGCTensorString;
+  } EcoTensorInt;
 
   typedef struct {
     int ncells_per_col_;
     int num_components;
     int num_columns;
     int num_pfts;
-  } BGCSizes;
+  } EcoSizes;
 
+  /* ATS -> EcoSIM, once at setup */
   typedef struct {
-    BGCMatrixDouble liquid_density;
-    BGCMatrixDouble gas_density;
-    BGCMatrixDouble ice_density;
-    BGCMatrixDouble rock_density;
-    BGCMatrixDouble porosity;
-    BGCMatrixDouble water_content;
-    BGCMatrixDouble matric_pressure;
-    BGCMatrixDouble temperature;
-    BGCMatrixDouble hydraulic_conductivity;
-    BGCMatrixDouble bulk_density;
-    BGCMatrixDouble subsurface_water_source;
-    BGCMatrixDouble subsurface_energy_source;
-    BGCVectorDouble surface_energy_source;
-    BGCVectorDouble surface_water_source;
-    BGCVectorDouble snow_depth;
-    BGCTensorDouble mole_fraction;
-  } BGCState;
+    double heat_capacity;   /* [MJ mol^-1 K^-1] */
+    double field_capacity;  /* pressure at field capacity [MPa] */
+    double wilting_point;   /* pressure at wilting point [MPa] */
+    bool p_bool;            /* EcoSIM precipitation (total, partitioned by EcoSIM) */
+    bool a_bool;            /* prescribe snow albedo */
+    bool pheno_bool;        /* prescribe phenology */
+    bool microbe_bool;      /* microbe model (not copied by EcoSIM) */
+    char* pft_file;         /* PFT parameter file, owned by the PK */
+  } EcoConfig;
 
-  /* EcoSIM-private data (carried state and EcoSIM-only outputs), packed by
-     EcoSIM's ATSStateRegistryMod. ATS stores it without interpreting it; the
-     layout is queried with ecosim_internal_state_entry(). Must match
-     BGCInternalState in EcoSIM's EcoContainers.F90. */
+  /* ATS -> EcoSIM, at setup and every advance; never read back */
   typedef struct {
-    int layout_version;
-    int num_entries;
-    int num_columns;
-    int values_per_column;
-    BGCMatrixDouble values; /* values_per_column x num_columns */
-  } BGCInternalState;
-
-  /* roles of internal state entries, and string lengths of their layout */
-  enum { kBGCRolePrivate = 0, kBGCRoleOutput = 1 };
-  enum { kBGCStateNameLength = 64, kBGCStateUnitsLength = 32, kBGCStateDescriptionLength = 128 };
-
-  typedef struct {
-    BGCMatrixDouble liquid_saturation;
-    BGCMatrixDouble gas_saturation;
-    BGCMatrixDouble ice_saturation;
-    BGCMatrixDouble relative_permeability;
-    BGCMatrixDouble thermal_conductivity;
-    BGCMatrixDouble volume;
-    BGCMatrixDouble depth;
-    BGCMatrixDouble dz;
-    BGCMatrixDouble plant_wilting_factor;
-    BGCMatrixDouble rooting_depth_fraction;
-    BGCMatrixDouble plant_functional_type;
-    BGCVectorDouble column_area;
-    BGCVectorDouble shortwave_radiation;
-    BGCVectorDouble longwave_radiation;
-    BGCVectorDouble air_temperature;
-    BGCVectorDouble vapor_pressure_air;
-    BGCVectorDouble wind_speed;
-    BGCVectorDouble precipitation;
-    BGCVectorDouble precipitation_snow;
-    BGCVectorDouble elevation;
-    BGCVectorDouble aspect;
-    BGCVectorDouble slope;
-    BGCVectorDouble LAI;
-    BGCVectorDouble SAI;
-    BGCVectorDouble vegetation_type;
-    BGCVectorDouble snow_albedo;
+    /* per cell: ncells_per_col_ x num_columns */
+    EcoMatrixDouble liquid_density;         /* molar_density_liquid */
+    EcoMatrixDouble gas_density;            /* not filled */
+    EcoMatrixDouble ice_density;            /* zeros when has_ice (not filled from a field) */
+    EcoMatrixDouble rock_density;
+    EcoMatrixDouble porosity;
+    EcoMatrixDouble water_content;
+    EcoMatrixDouble matric_pressure;        /* from capillary_pressure_gas_liq */
+    EcoMatrixDouble temperature;
+    EcoMatrixDouble hydraulic_conductivity; /* not used by EcoSIM */
+    EcoMatrixDouble bulk_density;           /* not filled */
+    EcoMatrixDouble liquid_saturation;
+    EcoMatrixDouble gas_saturation;         /* not filled */
+    EcoMatrixDouble ice_saturation;         /* zeros when has_ice (not filled from a field) */
+    EcoMatrixDouble relative_permeability;  /* zeros (not filled from a field) */
+    EcoMatrixDouble thermal_conductivity;   /* not filled */
+    EcoMatrixDouble volume;
+    EcoMatrixDouble depth;
+    EcoMatrixDouble dz;
+    EcoMatrixDouble plant_wilting_factor;   /* placeholder, filled from porosity */
+    EcoMatrixDouble rooting_depth_fraction; /* placeholder, filled from porosity */
+    EcoMatrixDouble plant_functional_type;  /* first num_pfts entries of each column */
+    EcoTensorDouble mole_fraction;          /* ncells x num_columns x num_components; microbes only */
+    /* per column: num_columns */
+    EcoVectorDouble column_area;
+    EcoVectorDouble shortwave_radiation;
+    EcoVectorDouble longwave_radiation;     /* not filled */
+    EcoVectorDouble air_temperature;
+    EcoVectorDouble vapor_pressure_air;
+    EcoVectorDouble wind_speed;
+    EcoVectorDouble precipitation;          /* total if p_bool, else rain */
+    EcoVectorDouble precipitation_snow;     /* only if !p_bool */
+    EcoVectorDouble elevation;
+    EcoVectorDouble aspect;
+    EcoVectorDouble slope;
+    EcoVectorDouble LAI;
+    EcoVectorDouble SAI;
+    EcoVectorDouble vegetation_type;        /* not filled */
+    EcoVectorDouble snow_albedo;
+    /* atmosphere composition (not initialized by the PK) */
     double atm_n2;
     double atm_o2;
     double atm_co2;
@@ -172,56 +163,69 @@ extern const int kBGCMaxWordLength;
     double atm_n2o;
     double atm_h2;
     double atm_nh3;
-    double heat_capacity;
-    double field_capacity;
-    double wilting_point;
+    /* clock (set before every advance) */
     int current_day;
     int current_year;
-    bool p_bool;
-    bool a_bool;
-    bool pheno_bool;
-    bool microbe_bool;
-    char* pft_file;
-  } BGCProperties;
+  } EcoEnvironment;
+
+  /* EcoSIM -> ATS, every advance */
+  typedef struct {
+    EcoMatrixDouble subsurface_water_source;  /* EcoSIM: m3 per grid cell per hour */
+    EcoMatrixDouble subsurface_energy_source; /* not read back by ATS */
+    EcoVectorDouble surface_water_source;     /* EcoSIM: m h-1 */
+    EcoVectorDouble surface_energy_source;    /* EcoSIM: per hour */
+    EcoVectorDouble snow_depth;               /* also sent in: EcoSIM's snow state */
+  } EcoFeedback;
+
+  /* EcoSIM-private data (carried state and EcoSIM-only outputs), packed by
+     EcoSIM's ATSStateRegistryMod. ATS stores it without interpreting it; the
+     layout is queried with ecosim_internal_state_entry(). */
+  typedef struct {
+    int layout_version;
+    int num_entries;
+    int num_columns;
+    int values_per_column;
+    EcoMatrixDouble values; /* values_per_column x num_columns */
+  } EcoInternalState;
+
+  /* roles of internal state entries, and string lengths of their layout */
+  enum { kEcoRolePrivate = 0, kEcoRoleOutput = 1 };
+  enum { kEcoStateNameLength = 64, kEcoStateUnitsLength = 32, kEcoStateDescriptionLength = 128 };
+
+  /* container types whose sizes are checked against EcoSIM (same order as
+     ecosim_container_sizes() in ecosim_wrappers.F90) */
+  enum { kEcoNumContainerTypes = 8 };
 
   typedef struct {
-    BGCVectorInt aux_ints;  /* [-] */
-    BGCVectorDouble aux_doubles;  /* [-] */
-  } BGCAuxiliaryData;
-
-  typedef struct {
-    /* read data files/structures, initialize memory, basis management
-       (includes reading database, swapping basis, etc.) */
     void (*DataTest)();
 
     void (*Setup)(
-      BGCProperties* properties,
-      BGCState* state,
-      BGCInternalState* internal_state,
-      BGCSizes* sizes,
+      EcoConfig* config,
+      EcoEnvironment* environment,
+      EcoFeedback* feedback,
+      EcoInternalState* internal_state,
+      EcoSizes* sizes,
       int num_iterations,
       int num_columns,
       int ncells_per_col_);
 
-    /* gracefully shutdown the engine, cleanup memory */
     void (*Shutdown)();
 
-    /* take one (or more?) reaction steps in operator split mode */
     void (*Advance)(
       double delta_t,
-      BGCProperties* properties,
-      BGCState* state,
-      BGCInternalState* internal_state,
-      BGCSizes* sizes,
+      EcoEnvironment* environment,
+      EcoFeedback* feedback,
+      EcoInternalState* internal_state,
+      EcoSizes* sizes,
       int num_iterations,
       int num_columns);
 
-  } BGCInterface;
+  } EcoInterface;
 
-  void CreateBGCInterface(const char* const engine_name, BGCInterface* interface);
+  void CreateEcoInterface(const char* const engine_name, EcoInterface* interface);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif  /* ALQUIMIA_CONTAINERS_H_ */
+#endif  /* ECO_CONTAINERS_H_ */

@@ -10,10 +10,29 @@
 This PK couples ATS to the BGC code EcoSIM. This PK essentially takes over the
 surface balance aspects of ATS and replaces them with those from EcoSIM.
 
-In addition this code takes data from ATS state and loads it into a struct that
-is fortran readable (BGCContainer). The data structures and methods were adapted
+In addition this code takes data from ATS state and loads it into structs that
+are fortran readable (data/EcoContainers.hh, mirrored in EcoSIM's
+ATSUtils/EcoContainers.F90). The data structures and methods were adapted
 from those used in the Alquimia code, additionally the general code structure
 Engine code are adapted from Alquimia as well.
+
+EXCHANGE CONTAINERS
+
+   EcoConfig         ATS -> EcoSIM, once at setup: heat capacity, field
+                     capacity, wilting point, the four flags, PFT file.
+   EcoEnvironment    ATS -> EcoSIM, at setup and every advance: soil state and
+                     properties, column geometry, meteorological forcing,
+                     prescribed vegetation, atmosphere composition, clock.
+                     Owned by ATS, never read back.
+   EcoFeedback       EcoSIM -> ATS, every advance: surface and subsurface water
+                     and energy sources, snow depth. Snow depth is also sent in
+                     (EcoSIM's snow state); the incoming sources are unused.
+   EcoInternalState  EcoSIM-private state (see ECOSIM INTERNAL STATE below).
+   EcoSizes          cells per column, columns, components, PFTs.
+
+   The sizes of these types are checked against EcoSIM's bind(C) types at
+   setup (EcoEngine::CheckContainerSizes). Members that are not filled or are
+   placeholders are marked in data/EcoContainers.hh.
 
 Structures for looping over cells of columns were adapted from ATS's simpleBGC code
 
@@ -244,39 +263,28 @@ class EcoSIM : public PK_Physical_Default {
 
   //This is not in the Alquimia_PK, for whatever reason it is defined in
   //The Chemistry_PK even though it isn't used there, and then included
-  Teuchos::RCP<BGCEngine> bgc_engine() { return bgc_engine_; }
+  Teuchos::RCP<EcoEngine> eco_engine() { return eco_engine_; }
 
  private:
 
-   //Helper functions from Alquimia
-   void CopyToEcoSIM(int column,
-           BGCProperties& props,
-           BGCState& state,
-           BGCAuxiliaryData& aux_data,
-         const Tag& water_tag = Tags::DEFAULT);
+   // ATS -> EcoSIM, once at setup
+   void CopyConfigToEcoSIM_(EcoConfig& config);
 
-   void CopyFromEcoSIM(const int cell,
-                const BGCProperties& props,
-                const BGCState& state,
-                const BGCAuxiliaryData& aux_data,
-              const Tag& water_tag = Tags::DEFAULT);
+   // ATS -> EcoSIM, at setup and every advance: the environment, snow depth
+   // (feedback), and the internal state
+   void CopyToEcoSIM_process(int proc,
+                             EcoEnvironment& environment,
+                             EcoFeedback& feedback,
+                             const Tag& water_tag = Tags::DEFAULT);
 
-    //Helper functions from Alquimia
-    void CopyToEcoSIM_process(int proc,
-            BGCProperties& props,
-            BGCState& state,
-            BGCAuxiliaryData& aux_data,
-          const Tag& water_tag = Tags::DEFAULT);
-
-    void CopyFromEcoSIM_process(const int proc,
-                 const BGCProperties& props,
-                 const BGCState& state,
-                 const BGCAuxiliaryData& aux_data,
-               const Tag& water_tag = Tags::DEFAULT);
+   // EcoSIM -> ATS, every advance: the feedback and the internal state
+   void CopyFromEcoSIM_process(const int proc,
+                               const EcoFeedback& feedback,
+                               const Tag& water_tag = Tags::DEFAULT);
 
    // EcoSIM internal state (see ECOSIM INTERNAL STATE above)
-   void CopyInternalStateToEcoSIM_(BGCInternalState& internal_state);
-   void CopyInternalStateFromEcoSIM_(const BGCInternalState& internal_state);
+   void CopyInternalStateToEcoSIM_(EcoInternalState& internal_state);
+   void CopyInternalStateFromEcoSIM_(const EcoInternalState& internal_state);
 
    int InitializeSingleProcess(int proc);
 
@@ -390,22 +398,22 @@ class EcoSIM : public PK_Physical_Default {
   Key T_surf_key_;
 
   // EcoSIM internal state: layout reported by EcoSIM, one ATS field per entry
-  std::vector<BGCInternalStateEntry> internal_state_layout_;
+  std::vector<EcoInternalStateEntry> internal_state_layout_;
   std::vector<Key> internal_state_keys_;
   std::vector<std::string> visualize_internal_state_;
   Key internal_state_version_key_;
 
-  Teuchos::RCP<BGCEngine> bgc_engine_;
+  Teuchos::RCP<EcoEngine> eco_engine_;
 
   double atm_n2_, atm_o2_, atm_co2_, atm_ch4_, atm_n2o_, atm_h2_, atm_nh3_;
   double pressure_at_field_capacity, pressure_at_wilting_point;
 
  private:
-  BGCState bgc_state_;
-  BGCProperties bgc_props_;
-  BGCAuxiliaryData bgc_aux_data_;
-  BGCSizes bgc_sizes_;
-  BGCInternalState bgc_internal_state_ = {};
+  EcoConfig eco_config_ = {};
+  EcoEnvironment eco_env_ = {};
+  EcoFeedback eco_feedback_ = {};
+  EcoInternalState eco_istate_ = {};
+  EcoSizes eco_sizes_ = {};
 
   Teuchos::RCP<Epetra_SerialDenseVector> column_vol_save;
   Teuchos::RCP<Epetra_SerialDenseVector> column_wc_save;

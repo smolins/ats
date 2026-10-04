@@ -27,118 +27,58 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
-#ifndef BGC_C_MEMORY_H_
-#define BGC_C_MEMORY_H_
 
-//#include "alquimia/alquimia_interface.h"
-//#include "alquimia/alquimia_containers.h"
+#ifndef ECO_C_MEMORY_H_
+#define ECO_C_MEMORY_H_
+
 #include "EcoContainers.hh"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-  /* Alquimia Vectors */
-  void AllocateBGCVectorDouble(const int size, BGCVectorDouble* vector);
-  void FreeBGCVectorDouble(BGCVectorDouble* vector);
+  /* Vectors */
+  void AllocateEcoVectorDouble(const int size, EcoVectorDouble* vector);
+  void FreeEcoVectorDouble(EcoVectorDouble* vector);
 
-  void AllocateBGCVectorInt(const int size, BGCVectorInt* vector);
-  void FreeBGCVectorInt(BGCVectorInt* vector);
+  void AllocateEcoVectorInt(const int size, EcoVectorInt* vector);
+  void FreeEcoVectorInt(EcoVectorInt* vector);
 
-  void AllocateBGCVectorString(const int size, BGCVectorString* vector);
-  void FreeBGCVectorString(BGCVectorString* vector);
+  /* Matrices */
+  void AllocateEcoMatrixDouble(const int cells, const int columns, EcoMatrixDouble* matrix);
+  void FreeEcoMatrixDouble(EcoMatrixDouble* matrix);
 
-  /* Matrix */
-  void AllocateBGCMatrixDouble(const int cells, const int columns, BGCMatrixDouble* matrix);
-  void FreeBGCMatrixDouble(BGCMatrixDouble* matrix);
+  void AllocateEcoMatrixInt(const int cells, const int columns, EcoMatrixInt* matrix);
+  void FreeEcoMatrixInt(EcoMatrixInt* matrix);
 
-  void AllocateBGCMatrixInt(const int cells, const int columns, BGCMatrixInt* matrix);
-  void FreeBGCMatrixInt(BGCMatrixInt* matrix);
+  /* Tensors */
+  void AllocateEcoTensorDouble(const int cells, const int columns, const int components,
+                               EcoTensorDouble* tensor);
+  void FreeEcoTensorDouble(EcoTensorDouble* tensor);
 
+  void AllocateEcoTensorInt(const int cells, const int columns, const int components,
+                            EcoTensorInt* tensor);
+  void FreeEcoTensorInt(EcoTensorInt* tensor);
 
-  void AllocateBGCMatrixString(const int cells, const int columns, BGCMatrixString* matrix);
-  void FreeBGCMatrixString(BGCMatrixString* matrix);
+  /* Exchange containers (EcoConfig holds no arrays and needs no allocation) */
+  void AllocateEcoEnvironment(EcoEnvironment* environment,
+                              int ncells_per_col_,
+                              int num_components,
+                              int num_columns);
+  void FreeEcoEnvironment(EcoEnvironment* environment);
 
-  void AllocateBGCTensorDouble(const int cells, const int columns, BGCTensorDouble* tensor);
-  void FreeBGCMatrixDouble(BGCMatrixDouble* tensor);
+  void AllocateEcoFeedback(EcoFeedback* feedback, int ncells_per_col_, int num_columns);
+  void FreeEcoFeedback(EcoFeedback* feedback);
 
-  void AllocateBGCTensorInt(const int cells, const int columns, BGCTensorInt* tensor);
-  void FreeBGCTensorInt(BGCTensorInt* tensor);
-
-  /* State */
-  void AllocateBGCState(BGCSizes* sizes,
-                        BGCState* state,
-                        int ncells_per_col_,
-                        int num_components,
-                        int num_columns,
-                        int num_pfts);
-  void FreeBGCState(BGCState* state);
-
-  /* EcoSIM internal state */
-  void AllocateBGCInternalState(BGCInternalState* internal_state,
+  void AllocateEcoInternalState(EcoInternalState* internal_state,
                                 int layout_version,
                                 int num_entries,
                                 int num_columns,
                                 int values_per_column);
-  void FreeBGCInternalState(BGCInternalState* internal_state);
-
-  /* Auxiliary Data
-  void AllocateBGCAuxiliaryData(const BGCSizes* const sizes,
-                                BGCAuxiliaryData* aux_data,
-                                int ncells_per_col_);
-  void FreeBGCAuxiliaryData(BGCAuxiliaryData* aux_data);
-  */
-  /* Properties */
-  void AllocateBGCProperties(BGCSizes* sizes,
-                             BGCProperties* properties,
-                             int ncells_per_col_,
-			                 int num_columns,
-							 int num_pfts);
-  void FreeBGCProperties(BGCProperties* properties);
-
-  // Problem Meta Data
-  /*void AllocateAlquimiaProblemMetaData(const AlquimiaSizes* const sizes,
-                                       AlquimiaProblemMetaData* meta_data);
-
-  void FreeAlquimiaProblemMetaData(AlquimiaProblemMetaData* metda_data);
-
-  // Status
-  void AllocateAlquimiaEngineStatus(AlquimiaEngineStatus* status);
-
-  void FreeAlquimiaEngineStatus(AlquimiaEngineStatus* status);
-
-  // Auxiliary Output Data
-  void AllocateAlquimiaAuxiliaryOutputData(const AlquimiaSizes* const sizes,
-                                           AlquimiaAuxiliaryOutputData* aux_output);
-  void FreeAlquimiaAuxiliaryOutputData(AlquimiaAuxiliaryOutputData* aux_output);
-
-  // Geochemical conditions/constraints
-  void AllocateAlquimiaGeochemicalConditionVector(const int num_conditions,
-                                                  AlquimiaGeochemicalConditionVector* condition_list);
-  void AllocateAlquimiaGeochemicalCondition(const int size_name,
-                                            const int num_aqueous_constraints,
-                                            const int num_mineral_constraints,
-                                            AlquimiaGeochemicalCondition* condition);
-  void AllocateAlquimiaAqueousConstraintVector(const int num_constraints,
-                                               AlquimiaAqueousConstraintVector* constraint_list);
-  void AllocateAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint);
-  void AllocateAlquimiaMineralConstraintVector(const int num_constraints,
-                                               AlquimiaMineralConstraintVector* constraint_list);
-  void AllocateAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint);
-
-  void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* condition_list);
-  void FreeAlquimiaGeochemicalCondition(AlquimiaGeochemicalCondition* condition);
-  void FreeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vector);
-  void FreeAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint);
-  void FreeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vector);
-  void FreeAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint);
-
-  // Data
-  void AllocateAlquimiaData(AlquimiaData* data);
-  void FreeAlquimiaData(AlquimiaData* data);*/
+  void FreeEcoInternalState(EcoInternalState* internal_state);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif  /* ALQUIMIA_C_MEMORY_H_ */
+#endif  /* ECO_C_MEMORY_H_ */

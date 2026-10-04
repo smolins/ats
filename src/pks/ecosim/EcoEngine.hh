@@ -8,124 +8,91 @@
 
   Author: Jeffrey Johnson
 
-  This is a point of contact for the chemistry engine exposed by Alquimia
-  to the rest of Amanzi--it provides the ability to enforce geochemical
-  conditions and to integrate reactions given a chemical configuration.
+  Point of contact between the EcoSIM PK and EcoSIM: allocates the exchange
+  containers (EcoContainers.hh) and calls EcoSIM's C entry points
+  (ecosim_interface.h).
 */
 
-#ifndef BGC_ENGINE_HH_
-#define BGC_ENGINE_HH_
+#ifndef ECO_ENGINE_HH_
+#define ECO_ENGINE_HH_
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include "EcoMemory.hh"
 #include "EcoContainers.hh"
-
-#include "VerboseObject.hh"
 
 namespace Amanzi {
 namespace EcoSIM {
 
 // One entry of the EcoSIM internal state layout (see ATSStateRegistryMod.F90)
-struct BGCInternalStateEntry {
+struct EcoInternalStateEntry {
   std::string ats_name;    // ATS field basename, key "surface-<ats_name>"
   std::string ecosim_name; // EcoSIM variable holding it
   std::string units;       // as annotated in EcoSIM
   std::string description;
   int num_components;      // per column
-  int role;                // kBGCRolePrivate or kBGCRoleOutput
+  int role;                // kEcoRolePrivate or kEcoRoleOutput
 };
 
-class BGCEngine {
+class EcoEngine {
  public:
+  EcoEngine(const std::string& engine_name, const std::string& input_file);
+  ~EcoEngine();
 
-  // Constructs a chemistry engine using the given engine (backend) name and input file.
-  BGCEngine(const std::string& engineName, const std::string& inputFile);
-
-  // Destructor.
-  ~BGCEngine();
-
-  // Returns the name of the backend that does the chemistry.
-  const std::string& Name() const;
-
-  // Returns true if the chemistry engine is thread-safe, false if not.
-  bool IsThreadSafe() const;
-
-  // Returns a reference to a "sizes" object that can be queried to find the sizes of the various
-  // arrays representing the geochemical state within the engine.
-  const BGCSizes& Sizes() const;
-
-  // Initializes the data structures that hold the chemical state information.
-  void InitState(BGCProperties& properties,
-                 BGCState& state,
-                 BGCAuxiliaryData& aux_data,
+  // Allocates/frees the arrays of the environment and feedback containers.
+  void InitState(EcoEnvironment& environment,
+                 EcoFeedback& feedback,
                  int ncells_per_col_,
                  int num_components,
-                 int num_columns,
-                 int num_pfts);
-  
+                 int num_columns);
+  void FreeState(EcoEnvironment& environment, EcoFeedback& feedback);
 
-  // Frees the data structures that hold the chemical state information.
-  void FreeState(BGCProperties& properties,
-                 BGCState& state,
-                 BGCAuxiliaryData& aux_data);
+  // Throws if the container sizes differ between this build and EcoSIM's
+  // bind(C) types (a mismatch means the C header and EcoContainers.F90 differ).
+  void CheckContainerSizes() const;
 
   void DataTest();
 
-  bool Setup(BGCProperties& properties,
-               BGCState& state,
-               BGCInternalState& internal_state,
-               BGCSizes& sizes,
-               int num_iterations,
-               int num_columns,
-               int ncells_per_col_);
+  bool Setup(EcoConfig& config,
+             EcoEnvironment& environment,
+             EcoFeedback& feedback,
+             EcoInternalState& internal_state,
+             EcoSizes& sizes,
+             int num_iterations,
+             int num_columns,
+             int ncells_per_col_);
 
   bool Advance(const double delta_time,
-               BGCProperties& properties,
-               BGCState& state,
-               BGCInternalState& internal_state,
-               BGCSizes& sizes,
+               EcoEnvironment& environment,
+               EcoFeedback& feedback,
+               EcoInternalState& internal_state,
+               EcoSizes& sizes,
                int num_iterations,
                int num_columns);
 
   // Layout of the EcoSIM internal state. Static: valid before Setup.
   int InternalStateLayoutVersion() const;
-  std::vector<BGCInternalStateEntry> InternalStateLayout(const BGCSizes& sizes) const;
+  std::vector<EcoInternalStateEntry> InternalStateLayout(const EcoSizes& sizes) const;
 
   // Allocates/frees the container for the internal state of num_columns columns.
-  void InitInternalState(BGCInternalState& internal_state,
-                         const std::vector<BGCInternalStateEntry>& layout,
+  void InitInternalState(EcoInternalState& internal_state,
+                         const std::vector<EcoInternalStateEntry>& layout,
                          int num_columns);
-  void FreeInternalState(BGCInternalState& internal_state);
-
-  void CopyBGCState(const BGCState* const source,
-                         BGCState* destination);
-  void CopyBGCProperties(const BGCProperties* const source,
-                              BGCProperties* destination);
+  void FreeInternalState(EcoInternalState& internal_state);
 
  private:
-
-  // bgc data structures.
-  bool bgc_initialized_;
-  void* engine_state_;
-  BGCSizes sizes_;
-  BGCInterface bgc_;
-
-  Teuchos::RCP<VerboseObject> vo_;
-  // Back-end engine name and input file.
-  std::string bgc_engine_name_;
-  std::string bgc_engine_inputfile_;
+  EcoInterface eco_;
+  std::string engine_name_;
+  std::string engine_inputfile_;
 
   // forbidden.
-  BGCEngine();
-  BGCEngine(const BGCEngine&);
-  BGCEngine& operator=(const BGCEngine&);
-
+  EcoEngine();
+  EcoEngine(const EcoEngine&);
+  EcoEngine& operator=(const EcoEngine&);
 };
 
-} // namespace
-} // namespace
+} // namespace EcoSIM
+} // namespace Amanzi
 
 #endif

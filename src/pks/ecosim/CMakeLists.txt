@@ -41,7 +41,6 @@ if(ENABLE_ECOSIM)
     #    EcoSIM_ATS_interface.cc
     #    EcoEngine.cc
     #    ecosim_wrappers.F90
-    #    data/bgc_fortran_memory_mod.F90
     #)
 
     #testing using link libs:
@@ -50,7 +49,6 @@ if(ENABLE_ECOSIM)
     set(ats_ecosim_src_files
       EcoSIM_ATS_interface.cc
       EcoEngine.cc
-      data/bgc_fortran_memory_mod.F90
     )
 
     set(ats_ecosim_inc_files
