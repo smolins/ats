@@ -32,7 +32,7 @@
 
 //#include "alquimia/alquimia_interface.h"
 //#include "alquimia/alquimia_containers.h"
-#include "BGC_containers.hh"
+#include "EcoContainers.hh"
 
 #ifdef __cplusplus
 extern "C" {

@@ -46,8 +46,8 @@
  *******************************************************************************/
 
 #include <iostream>
-#include "BGC_memory.hh"
-#include "BGC_containers.hh"
+#include "EcoMemory.hh"
+#include "EcoContainers.hh"
 
 // Returns the nearest power of 2 greater than or equal to n, or 0 if n == 0.
 static inline int nearest_power_of_2(int n)

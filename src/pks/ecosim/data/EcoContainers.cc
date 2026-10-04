@@ -27,7 +27,7 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
-#include "BGC_containers.hh"
+#include "EcoContainers.hh"
 
 #include "../ecosim_interface.h"
 

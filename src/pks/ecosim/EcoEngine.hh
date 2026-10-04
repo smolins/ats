@@ -20,8 +20,8 @@
 #include <vector>
 #include <map>
 
-#include "BGC_memory.hh"
-#include "BGC_containers.hh"
+#include "EcoMemory.hh"
+#include "EcoContainers.hh"
 
 #include "VerboseObject.hh"
 

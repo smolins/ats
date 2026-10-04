@@ -39,7 +39,7 @@ if(ENABLE_ECOSIM)
 
     #set(ats_ecosim_src_files
     #    EcoSIM_ATS_interface.cc
-    #    BGCEngine.cc
+    #    EcoEngine.cc
     #    ecosim_wrappers.F90
     #    data/bgc_fortran_memory_mod.F90
     #)
@@ -49,13 +49,13 @@ if(ENABLE_ECOSIM)
 
     set(ats_ecosim_src_files
       EcoSIM_ATS_interface.cc
-      BGCEngine.cc
+      EcoEngine.cc
       data/bgc_fortran_memory_mod.F90
     )
 
     set(ats_ecosim_inc_files
       EcoSIM_ATS_interface.hh
-      BGCEngine.hh
+      EcoEngine.hh
       ecosim_interface.h
   )
 

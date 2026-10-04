@@ -17,7 +17,7 @@
 #include <cstring>
 #include <cstdio>
 #include <assert.h>
-#include "BGCEngine.hh"
+#include "EcoEngine.hh"
 #include "ecosim_interface.h"
 #include "errors.hh"
 #include "exceptions.hh"

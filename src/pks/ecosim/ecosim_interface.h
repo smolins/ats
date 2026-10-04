@@ -4,7 +4,7 @@
  **
  ******************************************************************************/
 
-#include "data/BGC_containers.hh"
+#include "data/EcoContainers.hh"
 
 #ifdef __cplusplus
 extern "C" {

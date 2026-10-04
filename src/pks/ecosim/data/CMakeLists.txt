@@ -22,14 +22,14 @@ message("NetCDF_C_LIBRARIES: ${NetCDF_C_LIBRARIES}")
 include_directories(${ECOSIM_INCLUDE_DIRS})
 
 set(ats_ecosim_data_src_files
-    BGC_memory.cc
-    BGC_containers.cc
+    EcoMemory.cc
+    EcoContainers.cc
     bgc_fortran_memory_mod.F90
 )
 
 set(ats_ecosim_data_inc_files
-  BGC_containers.hh
-  BGC_memory.hh
+  EcoContainers.hh
+  EcoMemory.hh
 )
 
 file(GLOB ECOSIM_LIBRARIES

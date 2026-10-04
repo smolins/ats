@@ -125,7 +125,7 @@ extern const int kBGCMaxWordLength;
   /* EcoSIM-private data (carried state and EcoSIM-only outputs), packed by
      EcoSIM's ATSStateRegistryMod. ATS stores it without interpreting it; the
      layout is queried with ecosim_internal_state_entry(). Must match
-     BGCInternalState in EcoSIM's BGC_containers.F90. */
+     BGCInternalState in EcoSIM's EcoContainers.F90. */
   typedef struct {
     int layout_version;
     int num_entries;

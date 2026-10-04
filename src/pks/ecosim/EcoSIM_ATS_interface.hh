@@ -185,7 +185,7 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
 #include "Key.hh"
 #include "Mesh.hh"
 #include "State.hh"
-#include "BGCEngine.hh"
+#include "EcoEngine.hh"
 #include "PK_Factory.hh"
 #include "PK_Physical_Default.hh"
 #include "PK_Physical.hh"
