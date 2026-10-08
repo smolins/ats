@@ -25,8 +25,9 @@ EXCHANGE CONTAINERS
                      prescribed vegetation, atmosphere composition, clock.
                      Owned by ATS, never read back.
    EcoFeedback       EcoSIM -> ATS, every advance: surface and subsurface water
-                     and energy sources, snow depth. Snow depth is also sent in
-                     (EcoSIM's snow state); the incoming sources are unused.
+                     and energy sources, snow depth, canopy snow. Snow depth and
+                     canopy snow are also sent in (EcoSIM's snow state); the
+                     incoming sources are unused.
    EcoInternalState  EcoSIM-private state (see ECOSIM INTERNAL STATE below).
    EcoSizes          cells per column, columns, components, PFTs.
 
@@ -113,6 +114,7 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    `"LAI`"                               **surface-LAI**
    `"SAI`"                               **surface-SAI**
    `"vegetation type`"                   **surface-vegetation_type**
+   `"canopy snow`"                       **surface-canopy_snow**
 
    ECOSIM INTERNAL STATE
 
@@ -140,7 +142,6 @@ Structures for looping over cells of columns were adapted from ATS's simpleBGC c
    surface-litter_temperature                 TKS_vr(0)             1       K            private
    surface-litter_heat_capacity               VHeatCapacity_vr(0)   1       MJ m-3 K-1   private
    surface-canopy_water_pft                   WatHeldOnCanopy_pft   npft    m3 d-2       private
-   surface-canopy_snow                        SnowOnCanopy_pft      npft    m3 d-2       private
    surface-canopy_longwave_radiation          LWRadCanGPrev_col     1       MJ h-1       private (*)
    surface-canopy_latent_heat                 TLEX_col              1       MJ m-1       private (*)
    surface-canopy_sensible_heat               TSHX_col              1       MJ m-1       private (*)
@@ -394,6 +395,7 @@ class EcoSIM : public PK_Physical_Default {
   Key snow_depth_key_;
   Key snow_albedo_key_;
   Key snow_temperature_key_;
+  Key canopy_snow_key_;
   Key cap_pres_key_;
   Key T_surf_key_;
 
